@@ -4,8 +4,8 @@ Example app for the Tiler library. The repo does not contain all of the android/
 
 Example map in the [Tiled](https://www.mapeditor.org/) editor:
 
-<img src="https://github.com/DanTup/tiler/blob/master/doc/screenshots/simple_example_tiled.png" width="795" height="345" />
+<img src="https://github.com/DanTup/tiler/raw/master/doc/screenshots/simple_example_tiled.png" width="795" height="345" />
 
 Example map rendered in Flutter using Tiler:
 
-<img src="https://github.com/DanTup/tiler/blob/master/doc/screenshots/simple_example.png" width="840" height="510" />
+<img src="https://github.com/DanTup/tiler/raw/master/doc/screenshots/simple_example.png" width="840" height="510" />
