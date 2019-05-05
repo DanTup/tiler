@@ -8,9 +8,12 @@ environment:
   sdk: ">=2.2.2 <3.0.0"
 
 dependencies:
+  flutter:
+    sdk: flutter
   path:
   json_serializable:
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
   build_runner:
-  test:
