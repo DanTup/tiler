@@ -494,7 +494,7 @@ class ObjectText {
   final String color;
 
   /// Font family (default: ``sans-serif``)
-  @JsonKey(defaultValue: "sans-serif")
+  @JsonKey(defaultValue: 'sans-serif')
   final String fontfamily;
 
   /// Horizontal alignment (center, right, justify or left (default))
