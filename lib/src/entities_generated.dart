@@ -10,7 +10,8 @@ class BoolProperty extends Property {
           name,
           type,
         );
-  factory BoolProperty.fromJson(Map<String, dynamic> json) => _$BoolPropertyFromJson(json);
+  factory BoolProperty.fromJson(Map<String, dynamic> json) =>
+      _$BoolPropertyFromJson(json);
 
   final bool value;
 }
@@ -53,7 +54,8 @@ class ColorProperty extends Property {
           name,
           type,
         );
-  factory ColorProperty.fromJson(Map<String, dynamic> json) => _$ColorPropertyFromJson(json);
+  factory ColorProperty.fromJson(Map<String, dynamic> json) =>
+      _$ColorPropertyFromJson(json);
 
   final String value;
 }
@@ -68,7 +70,8 @@ class FileProperty extends Property {
           name,
           type,
         );
-  factory FileProperty.fromJson(Map<String, dynamic> json) => _$FilePropertyFromJson(json);
+  factory FileProperty.fromJson(Map<String, dynamic> json) =>
+      _$FilePropertyFromJson(json);
 
   final String value;
 }
@@ -83,7 +86,8 @@ class FloatProperty extends Property {
           name,
           type,
         );
-  factory FloatProperty.fromJson(Map<String, dynamic> json) => _$FloatPropertyFromJson(json);
+  factory FloatProperty.fromJson(Map<String, dynamic> json) =>
+      _$FloatPropertyFromJson(json);
 
   final double value;
 }
@@ -138,7 +142,8 @@ class GroupLayer extends Layer {
           x,
           y,
         );
-  factory GroupLayer.fromJson(Map<String, dynamic> json) => _$GroupLayerFromJson(json);
+  factory GroupLayer.fromJson(Map<String, dynamic> json) =>
+      _$GroupLayerFromJson(json);
 
   /// Array of :ref:`layers <json-layer>`. group only.
   final List<Layer> layers;
@@ -179,7 +184,8 @@ class ImageLayer extends Layer {
           x,
           y,
         );
-  factory ImageLayer.fromJson(Map<String, dynamic> json) => _$ImageLayerFromJson(json);
+  factory ImageLayer.fromJson(Map<String, dynamic> json) =>
+      _$ImageLayerFromJson(json);
 
   /// Image used by this layer. imagelayer only.
   final String image;
@@ -199,7 +205,8 @@ class IntProperty extends Property {
           name,
           type,
         );
-  factory IntProperty.fromJson(Map<String, dynamic> json) => _$IntPropertyFromJson(json);
+  factory IntProperty.fromJson(Map<String, dynamic> json) =>
+      _$IntPropertyFromJson(json);
 
   final int value;
 }
@@ -339,7 +346,8 @@ class MapObject {
     this.x,
     this.y,
   );
-  factory MapObject.fromJson(Map<String, dynamic> json) => _$MapObjectFromJson(json);
+  factory MapObject.fromJson(Map<String, dynamic> json) =>
+      _$MapObjectFromJson(json);
 
   /// Global tile ID, only if object represents a tile
   final int gid;
@@ -431,7 +439,8 @@ class ObjectGroupLayer extends Layer {
           x,
           y,
         );
-  factory ObjectGroupLayer.fromJson(Map<String, dynamic> json) => _$ObjectGroupLayerFromJson(json);
+  factory ObjectGroupLayer.fromJson(Map<String, dynamic> json) =>
+      _$ObjectGroupLayerFromJson(json);
 
   /// topdown (default) or index. objectgroup only.
   @JsonKey(name: 'draworder', defaultValue: LayerDrawOrder.topDown)
@@ -448,7 +457,8 @@ class ObjectTemplate {
     this.tileset,
     this.type,
   );
-  factory ObjectTemplate.fromJson(Map<String, dynamic> json) => _$ObjectTemplateFromJson(json);
+  factory ObjectTemplate.fromJson(Map<String, dynamic> json) =>
+      _$ObjectTemplateFromJson(json);
 
   /// The object instantiated by this template
   @JsonKey(name: 'object')
@@ -477,7 +487,8 @@ class ObjectText {
     this.text,
     this.valign,
   );
-  factory ObjectText.fromJson(Map<String, dynamic> json) => _$ObjectTextFromJson(json);
+  factory ObjectText.fromJson(Map<String, dynamic> json) =>
+      _$ObjectTextFromJson(json);
 
   /// Hex-formatted color (#RRGGBB or #AARRGGBB) (default: ``#000000``)
   final String color;
@@ -603,7 +614,8 @@ class StringProperty extends Property {
           name,
           type,
         );
-  factory StringProperty.fromJson(Map<String, dynamic> json) => _$StringPropertyFromJson(json);
+  factory StringProperty.fromJson(Map<String, dynamic> json) =>
+      _$StringPropertyFromJson(json);
 
   final String value;
 }
@@ -615,7 +627,8 @@ class Terrain {
     this.properties,
     this.tile,
   );
-  factory Terrain.fromJson(Map<String, dynamic> json) => _$TerrainFromJson(json);
+  factory Terrain.fromJson(Map<String, dynamic> json) =>
+      _$TerrainFromJson(json);
 
   /// Name of terrain
   final String name;
@@ -714,7 +727,8 @@ class TileLayer extends Layer {
           x,
           y,
         );
-  factory TileLayer.fromJson(Map<String, dynamic> json) => _$TileLayerFromJson(json);
+  factory TileLayer.fromJson(Map<String, dynamic> json) =>
+      _$TileLayerFromJson(json);
 
   /// Array of :ref:`chunks <json-chunk>` (optional). tilelayer only.
   final List<Chunk> chunks;
@@ -755,7 +769,8 @@ class TileMap {
     this.version,
     this.width,
   );
-  factory TileMap.fromJson(Map<String, dynamic> json) => _$TileMapFromJson(json);
+  factory TileMap.fromJson(Map<String, dynamic> json) =>
+      _$TileMapFromJson(json);
 
   /// Hex-formatted color (#RRGGBB or #AARRGGBB) (optional)
   @JsonKey(name: 'backgroundcolor')
@@ -860,7 +875,8 @@ class TileOffset {
     this.x,
     this.y,
   );
-  factory TileOffset.fromJson(Map<String, dynamic> json) => _$TileOffsetFromJson(json);
+  factory TileOffset.fromJson(Map<String, dynamic> json) =>
+      _$TileOffsetFromJson(json);
 
   /// Horizontal offset in pixels
   final int x;
@@ -876,7 +892,8 @@ class TileSetGrid {
     this.orientation,
     this.width,
   );
-  factory TileSetGrid.fromJson(Map<String, dynamic> json) => _$TileSetGridFromJson(json);
+  factory TileSetGrid.fromJson(Map<String, dynamic> json) =>
+      _$TileSetGridFromJson(json);
 
   /// Cell height of tile grid
   final int height;
@@ -921,7 +938,8 @@ class Tileset {
     this.version,
     this.wangSets,
   );
-  factory Tileset.fromJson(Map<String, dynamic> json) => _$TilesetFromJson(json);
+  factory Tileset.fromJson(Map<String, dynamic> json) =>
+      _$TilesetFromJson(json);
 
   /// Hex-formatted color (#RRGGBB or #AARRGGBB) (optional)
   @JsonKey(name: 'backgroundcolor')
@@ -1012,7 +1030,8 @@ class WangColor {
     this.probability,
     this.tile,
   );
-  factory WangColor.fromJson(Map<String, dynamic> json) => _$WangColorFromJson(json);
+  factory WangColor.fromJson(Map<String, dynamic> json) =>
+      _$WangColorFromJson(json);
 
   /// Hex-formatted color (#RRGGBB or #AARRGGBB)
   final String color;
@@ -1037,7 +1056,8 @@ class WangSet {
     this.tile,
     this.wangTiles,
   );
-  factory WangSet.fromJson(Map<String, dynamic> json) => _$WangSetFromJson(json);
+  factory WangSet.fromJson(Map<String, dynamic> json) =>
+      _$WangSetFromJson(json);
 
   /// Array of :ref:`Wang colors <json-wangcolor>`
   @JsonKey(name: 'cornercolors')
@@ -1070,7 +1090,8 @@ class WangTile {
     this.tileId,
     this.wangId,
   );
-  factory WangTile.fromJson(Map<String, dynamic> json) => _$WangTileFromJson(json);
+  factory WangTile.fromJson(Map<String, dynamic> json) =>
+      _$WangTileFromJson(json);
 
   /// Tile is flipped diagonally (default: false)
   @JsonKey(name: 'dflip', defaultValue: false)
