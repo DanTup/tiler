@@ -39,4 +39,5 @@ part of 'entities.dart';
 $defsCode''';
 
   await writeFile(outputFile, code);
+  await formatFile(outputFile);
 }
