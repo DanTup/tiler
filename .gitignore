@@ -1,7 +1,6 @@
 .dart_tool/
 .DS_Store
 .packages
-*.g.dart
 build/
 example/android/
 example/ios/
