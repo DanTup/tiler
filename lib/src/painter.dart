@@ -18,7 +18,7 @@ Color colorFromHex(String hexColor) {
   return Color(int.parse(hexColor, radix: 16));
 }
 
-/// A [CustomPainter] for rendering [LoadedTileMaps].
+/// A [CustomPainter] for rendering [LoadedTileMap]s.
 class TileMapPainter extends CustomPainter {
   final LoadedTileMap _loadedMap;
   final Map<int, Tileset> _tileSetForGid = {};
@@ -50,7 +50,7 @@ class TileMapPainter extends CustomPainter {
         _backgroundPaint = _loadedMap.map.backgroundColor != null
             ? (Paint()..color = colorFromHex(_loadedMap.map.backgroundColor))
             : null {
-    _loadedMap.map.tilesets?.forEach((ts) {
+    for (final ts in _loadedMap.map.tilesets ?? const <Tileset>[]) {
       final actualTs =
           ts.source != null ? _loadedMap.externalTilesets[ts.source] : ts;
       for (var i = 0; i < actualTs.tileCount; i++) {
@@ -58,10 +58,10 @@ class TileMapPainter extends CustomPainter {
         _tileSetsFirstGidForTileGid[ts.firstGid + i] = ts.firstGid;
       }
       _tilesById[actualTs] = {};
-      actualTs.tiles?.forEach((t) {
-        _tilesById[actualTs][t.id] = t;
-      });
-    });
+      for (final tile in actualTs.tiles ?? const <Tile>[]) {
+        _tilesById[actualTs][tile.id] = tile;
+      }
+    }
   }
 
   @override
@@ -78,8 +78,9 @@ class TileMapPainter extends CustomPainter {
       canvas.drawPaint(_backgroundPaint);
     }
 
-    _loadedMap.map.layers
-        .forEach((l) => _paintLayer(canvas, _elapsedMs, size, l, visible));
+    for (final layer in _loadedMap.map.layers) {
+      _paintLayer(canvas, _elapsedMs, size, layer, visible);
+    }
 
     if (_debugMode) {
       canvas.drawRect(visible.rect, _debugBorderPaint);
@@ -155,10 +156,11 @@ class TileMapPainter extends CustomPainter {
     } else if (layer is ImageLayer) {
       _paintImageLayer(canvas, size, layer);
     } else if (layer is GroupLayer) {
-      layer.layers
-          .forEach((l) => _paintLayer(canvas, elapsedMs, size, l, visible));
+      for (final layer in layer.layers) {
+        _paintLayer(canvas, elapsedMs, size, layer, visible);
+      }
     } else {
-      throw 'Unknown layer type: ${layer.runtimeType}/${layer.type}';
+      throw Exception('Unknown layer type: ${layer.runtimeType}/${layer.type}');
     }
 
     canvas.restore();
@@ -223,7 +225,7 @@ class TileMapPainter extends CustomPainter {
     // be visible for debug.
     // TODO: Visible?
     // TODO: Don't pain those outside of the area
-    layer.objects.forEach((obj) {
+    for (final obj in layer.objects) {
       final rect = _getRectForObject(obj);
       if (!visible.rect
           .overlaps(rect.translate(layer.offsetX, layer.offsetY))) {
@@ -234,7 +236,7 @@ class TileMapPainter extends CustomPainter {
       } else if (_debugMode) {
         _paintObjectDebug(obj, rect, canvas);
       }
-    });
+    }
   }
 
   void _paintTile(
