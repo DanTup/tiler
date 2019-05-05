@@ -1,3 +1,6 @@
 .dart_tool/
-*.g.dart
 .packages
+*.g.dart
+build/
+example/android/
+example/ios/
