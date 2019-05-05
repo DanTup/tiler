@@ -214,9 +214,12 @@ class TiledJsonSpecParser {
         sharedFields,
         subClasses: subClasses,
       ),
-      ...subClasses,
-      ...enums
-    ];
+    ]
+      // TODO: Remove this ignore and change to spread collections after next
+      // Flutter release.
+      // ignore: prefer_spread_collections
+      ..addAll(subClasses)
+      ..addAll(enums);
   }
 
   /// Converts "string of words" to "StringOfWords".
