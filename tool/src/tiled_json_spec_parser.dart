@@ -65,7 +65,7 @@ class TiledJsonSpecParser {
         ? null
         : _isEnum(description)
             ? '$type.${defaultValue == 'empty' ? 'none' : _improveName(null, defaultValue)}'
-            : jsonType == 'string' ? '"$defaultValue"' : defaultValue;
+            : jsonType == 'string' ? "'$defaultValue'" : defaultValue;
 
     final cleanDescription = _cleanDescription(description);
 
