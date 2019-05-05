@@ -1,3 +1,19 @@
+class ClassDefinition extends Definition {
+  final List<SubClassDefinition> subClasses;
+  final List<FieldDefinition> fields;
+
+  ClassDefinition(
+    String name,
+    this.fields, {
+    this.subClasses = const [],
+  }) : super(name) {
+    for (final s in subClasses) {
+      s.parent = this;
+    }
+    fields.sort((f1, f2) => f1.name.compareTo(f2.name));
+  }
+}
+
 class Definition {
   final String name;
 
