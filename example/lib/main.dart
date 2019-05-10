@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/painting.dart';
+import 'package:flutter/services.dart';
 import 'package:tiler/tiler.dart';
 
 void main() => runApp(MyApp());
@@ -71,7 +72,7 @@ class _TileMapWidgetState extends State<TileMapWidget> {
   @override
   void initState() {
     super.initState();
-    tileMap = loadMap(mapFile);
+    tileMap = loadMap(rootBundle, mapFile);
   }
 
   @override
