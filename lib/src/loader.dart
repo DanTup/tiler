@@ -6,7 +6,8 @@ import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
-import 'package:tiler/tiler.dart';
+
+import 'entities.dart';
 
 /// Loads a Tiled json map asynchronously. All external resources (including
 /// images and external tilesets) must be in the same bundle and will be loaded

@@ -3,7 +3,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/painting.dart';
-import 'package:tiler/tiler.dart';
+
+import 'entities.dart';
+import 'loader.dart';
 
 const _bit30flippedAntiDiagonally = 0x20000000;
 const _bit31flippedVertically = 0x40000000;

@@ -47,16 +47,14 @@ class _TileMapWidgetState extends State<TileMapWidget> {
           final map = loadedMap.map;
           return Padding(
             padding: const EdgeInsets.all(60),
-            child: CustomPaint(
-              painter: TileMapPainter(
-                loadedMap,
-                offset,
-                sw.elapsedMilliseconds,
-              ),
-              size: Size(
+            child: TileMap(
+              loadedMap,
+              offset,
+              Size(
                 (map.width * map.tileWidth).toDouble(),
                 (map.height * map.tileHeight).toDouble(),
               ),
+              sw.elapsedMilliseconds,
             ),
           );
         } else if (snapshot.hasError) {

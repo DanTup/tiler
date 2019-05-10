@@ -21,13 +21,10 @@ Future<void> expectMapRender(
     () => loadMap(testBundle, mapFile(mapName)),
   );
 
-  await tester.pumpWidget(CustomPaint(
-    painter: TileMapPainter(map, offset, 0),
-    size: size,
-  ));
+  await tester.pumpWidget(TileMap(map, offset, size));
 
   await expectLater(
-    find.byType(CustomPaint),
+    find.byType(TileMap),
     matchesGoldenFile(goldenFile(goldenName ?? mapName)),
   );
 }
