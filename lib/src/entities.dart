@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 part 'entities.g.dart';
 part 'entities_generated.dart';
@@ -11,9 +12,14 @@ final _zlib = ZLibCodec();
 
 List<int> decodeData(dynamic value) {
   if (value is String) {
-    // TODO: We shouldn't assume zlib?
     final compressedBytes = base64Decode(value);
-    final bytes = Uint8List.fromList(_zlib.decode(compressedBytes));
+    // TODO: This is a dirty, we assume that it's ZLIB and if it fails to decode
+    // it was not compressed. We don't have access to the compression type in
+    // here.
+    final bytes = _try(
+      () => Uint8List.fromList(_zlib.decode(compressedBytes)),
+      orElse: () => compressedBytes,
+    );
     final byteData = ByteData.view(bytes.buffer);
     return List.generate(
       (byteData.lengthInBytes / 4).floor(),
@@ -25,5 +31,14 @@ List<int> decodeData(dynamic value) {
     return null;
   } else {
     throw Exception('Unknown data type: ${value.runtimeType}');
+  }
+}
+
+T _try<T>(T Function() f, {@required T Function() orElse}) {
+  try {
+    return f();
+    // ignore: avoid_catches_without_on_clauses
+  } catch (e) {
+    return orElse();
   }
 }
