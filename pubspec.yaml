@@ -12,6 +12,7 @@ dependencies:
     sdk: flutter
   path: ^1.6.2
   json_annotation: ^2.2.0
+  meta: ^1.1.6
 
 dev_dependencies:
   flutter_test:
