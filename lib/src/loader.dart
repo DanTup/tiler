@@ -9,6 +9,8 @@ import 'package:path/path.dart' as path;
 
 import 'entities.dart';
 
+String fixPath(String p) => path.normalize(p).replaceAll(r'\', '/');
+
 /// Loads a Tiled json map asynchronously. All external resources (including
 /// images and external tilesets) must be in the same bundle and will be loaded
 /// during this phase, plus some additional computation the reduce work required
@@ -16,20 +18,29 @@ import 'entities.dart';
 Future<LoadedTileMap> loadMap(AssetBundle bundle, String mapFile) async {
   final map = TileMap.fromJson(
     jsonDecode(
-      await bundle.loadString(mapFile),
+      await bundle.loadString(fixPath(mapFile)),
     ) as Map<String, dynamic>,
   );
 
   final mapFolder = path.dirname(mapFile);
   final externalTilesets = await _getExternalTilesets(bundle, mapFolder, map);
-  final images = await _getPreloadedImages(
-      bundle, mapFolder, map, externalTilesets.values);
-  // Check if any tiles have animations, as we'll need to redraw every frame for this.
+  final mapImages = await _preloadMapImages(bundle, mapFolder, map);
+  final tilesetImages = <Tileset, Map<String, Image>>{};
+  await Future.wait(map.tilesets.map((ts) async {
+    tilesetImages[ts] = await _preloadTilesetImages(bundle, mapFolder, ts);
+  }));
+  await Future.wait(externalTilesets.keys.map((tsPath) async {
+    final ts = externalTilesets[tsPath];
+    final tsFolder = path.join(mapFolder, path.dirname(tsPath));
+    tilesetImages[ts] = await _preloadTilesetImages(bundle, tsFolder, ts);
+  }));
+
   final hasAnimations = map.tilesets.followedBy(externalTilesets.values).any(
       (ts) =>
           ts.tiles != null &&
           ts.tiles.any((t) => t.animation != null && t.animation.isNotEmpty));
-  return LoadedTileMap(map, externalTilesets, images, hasAnimations);
+  return LoadedTileMap(
+      map, mapImages, externalTilesets, tilesetImages, hasAnimations);
 }
 
 Future<Map<String, Tileset>> _getExternalTilesets(
@@ -47,20 +58,31 @@ Future<Map<String, Tileset>> _getExternalTilesets(
   return tilesets;
 }
 
-Future<Map<String, Image>> _getPreloadedImages(AssetBundle bundle,
-    String mapFolder, TileMap map, Iterable<Tileset> externalTilesets) async {
-  final allTilesets = map.tilesets.followedBy(externalTilesets).toList();
-  final allImages = map.layers
+Future<Image> _loadImage(AssetBundle bundle, String assetsPath) async {
+  final imageData = await bundle.load(fixPath(assetsPath));
+  final image = await decodeImageFromList(imageData.buffer.asUint8List());
+  return image;
+}
+
+Future<Tileset> _loadTileset(AssetBundle bundle, String tsFile) async =>
+    Tileset.fromJson(jsonDecode(
+      await bundle.loadString(fixPath(tsFile)),
+    ) as Map<String, dynamic>);
+
+Future<Map<String, Image>> _preloadMapImages(
+    AssetBundle bundle, String mapFolder, TileMap map) async {
+  Iterable<Layer> layerWithChildren(Layer layer) => layer is GroupLayer
+      ? <Layer>[layer].followedBy(layer.layers.expand(layerWithChildren))
+      : [layer];
+  final allLayers =
+      map.layers.followedBy(map.layers.expand(layerWithChildren)).toList();
+
+  final allImages = allLayers
       .whereType<ImageLayer>()
       .map((l) => l.image)
-      .followedBy(allTilesets.map((ts) => ts.image))
-      .followedBy(
-          allTilesets.expand((ts) => ts.tiles?.map((t) => t.image) ?? const []))
       .where((img) => img != null)
       .toList();
 
-  // Pre-load all images into a cache while we're loading, since we can't do
-  // this during rendering.
   final images = <String, Image>{};
   await Future.wait(allImages.map((imgPath) async {
     final assetsPath = '$mapFolder/$imgPath';
@@ -69,31 +91,40 @@ Future<Map<String, Image>> _getPreloadedImages(AssetBundle bundle,
   return images;
 }
 
-Future<Image> _loadImage(AssetBundle bundle, String assetsPath) async {
-  final imageData = await bundle.load(assetsPath);
-  final image = await decodeImageFromList(imageData.buffer.asUint8List());
-  return image;
-}
+Future<Map<String, Image>> _preloadTilesetImages(
+    AssetBundle bundle, String tilesetFolder, Tileset ts) async {
+  final allImages = [ts.image]
+      .followedBy(ts.tiles?.map((t) => t.image) ?? const [])
+      .where((img) => img != null)
+      .toList();
 
-Future<Tileset> _loadTileset(AssetBundle bundle, String tsFile) async =>
-    Tileset.fromJson(jsonDecode(
-      await bundle.loadString(tsFile),
-    ) as Map<String, dynamic>);
+  final images = <String, Image>{};
+  await Future.wait(allImages.map((imgPath) async {
+    final assetsPath = '$tilesetFolder/$imgPath';
+    images[imgPath] = await _loadImage(bundle, assetsPath);
+  }));
+  return images;
+}
 
 // TODO: Rename this and maybe convert everything to our own data structure that
 // can pre-compute anything expensive to avoid doing it every frame (for ex,
 // animation lengths, TextPainter layouts, etc.)
 class LoadedTileMap {
   final TileMap map;
+
+  /// A lookup from a map-relative path to the related [Image].
+  final Map<String, Image> mapImages;
+
+  /// A lookup from a map-relative path to an external [Tileset].
   final Map<String, Tileset> externalTilesets;
-  final Map<String, Image> images;
+
+  /// A lookup from a tileset-relative path to the related [Image].
+  final Map<Tileset, Map<String, Image>> tilesetImages;
+
+  /// Whether this map has animations and may need to be redrawn as time passes
+  /// even if there have been no other changes.
   final bool hasAnimations;
 
-  LoadedTileMap(
-      this.map, this.externalTilesets, this.images, this.hasAnimations);
-
-  bool isEqualTo(LoadedTileMap other) =>
-      map == other.map &&
-      externalTilesets == other.externalTilesets &&
-      images == other.images;
+  LoadedTileMap(this.map, this.mapImages, this.externalTilesets,
+      this.tilesetImages, this.hasAnimations);
 }

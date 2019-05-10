@@ -47,7 +47,9 @@ class TileMapPainter extends CustomPainter {
     bool debugMode = false,
   })  : assert(_loadedMap != null),
         assert(_loadedMap.map != null),
-        assert(_loadedMap.images != null),
+        assert(_loadedMap.mapImages != null),
+        assert(_loadedMap.externalTilesets != null),
+        assert(_loadedMap.tilesetImages != null),
         _debugMode = debugMode,
         _backgroundPaint = _loadedMap.map.backgroundColor != null
             ? (Paint()..color = colorFromHex(_loadedMap.map.backgroundColor))
@@ -106,8 +108,9 @@ class TileMapPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(TileMapPainter oldDelegate) =>
-      !_loadedMap.isEqualTo(oldDelegate._loadedMap) ||
+      _loadedMap != oldDelegate._loadedMap ||
       _offset != oldDelegate._offset ||
+      // TODO: Size???
       _loadedMap.hasAnimations;
 
   Rect _getRectContainingPoints(List<Point> polyline) {
@@ -135,8 +138,10 @@ class TileMapPainter extends CustomPainter {
 
   void _paintImageLayer(Canvas canvas, Size size, ImageLayer layer) {
     // TODO: Only if visible?
+    final image = _loadedMap.mapImages[layer.image];
+    assert(image != null);
     canvas.drawImage(
-      _loadedMap.images[layer.image],
+      image,
       Offset(layer.x.toDouble(), layer.y.toDouble()),
       _paint,
     );
@@ -278,7 +283,8 @@ class TileMapPainter extends CustomPainter {
       }).tileId;
     }
 
-    final image = _loadedMap.images[ts.image];
+    final image = _loadedMap.tilesetImages[ts][ts.image];
+    assert(image != null);
     // TODO: Margin
     // TODO: TileOffset
     // TODO: TransparentColor
