@@ -380,8 +380,7 @@ ObjectGroupLayer _$ObjectGroupLayerFromJson(Map<String, dynamic> json) {
 
 const _$LayerDrawOrderEnumMap = <LayerDrawOrder, dynamic>{
   LayerDrawOrder.topDown: 'topdown',
-  LayerDrawOrder.indexOrder: 'index',
-  LayerDrawOrder.objectGroup: 'objectgroup'
+  LayerDrawOrder.indexOrder: 'index'
 };
 
 ObjectTemplate _$ObjectTemplateFromJson(Map<String, dynamic> json) {
@@ -634,14 +633,12 @@ TileLayer _$TileLayerFromJson(Map<String, dynamic> json) {
 const _$LayerCompressionEnumMap = <LayerCompression, dynamic>{
   LayerCompression.zlib: 'zlib',
   LayerCompression.gzip: 'gzip',
-  LayerCompression.none: 'none',
-  LayerCompression.tileLayer: 'tilelayer'
+  LayerCompression.none: 'none'
 };
 
 const _$LayerEncodingEnumMap = <LayerEncoding, dynamic>{
   LayerEncoding.csv: 'csv',
-  LayerEncoding.base64: 'base64',
-  LayerEncoding.tileLayer: 'tilelayer'
+  LayerEncoding.base64: 'base64'
 };
 
 TileMap _$TileMapFromJson(Map<String, dynamic> json) {

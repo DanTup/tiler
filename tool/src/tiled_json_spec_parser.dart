@@ -7,7 +7,7 @@ final _csvRow = RegExp(
 final _defaultValue = RegExp(
     r'``([\w\-]+)`` \(default\)|(empty) \(default\)|\(default: `?`?([\d\w\-]+)`?`?\)');
 final _descriptionReferences = RegExp(r'``([\w ]+)``');
-final _enumValue = RegExp(r'``([\w\-]+)``|empty');
+final _enumValue = RegExp(r'``([\w\-]+)``(?! only)|empty');
 final _refType = RegExp(r':ref:`json-([\w\-]+)`');
 final _table = RegExp(
     r'^\.\. _json-([\w\-]+):\n\n[\w ]+(?: \(?\w+\))?\n[-~\^]+\n+\s*\n[\s\S]*?\.\. csv-table::\n(?:\s*:\w+.*\n)*\n([\s\S]+?)\n$',

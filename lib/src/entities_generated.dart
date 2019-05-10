@@ -295,8 +295,6 @@ enum LayerCompression {
   zlib,
   gzip,
   none,
-  @JsonValue('tilelayer')
-  tileLayer,
 }
 
 enum LayerDrawOrder {
@@ -304,15 +302,11 @@ enum LayerDrawOrder {
   topDown,
   @JsonValue('index')
   indexOrder,
-  @JsonValue('objectgroup')
-  objectGroup,
 }
 
 enum LayerEncoding {
   csv,
   base64,
-  @JsonValue('tilelayer')
-  tileLayer,
 }
 
 enum LayerType {
