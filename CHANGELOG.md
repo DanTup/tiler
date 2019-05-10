@@ -1,9 +1,9 @@
 ## 0.1.3
 
-- Fix bad door tiles in example project map
-- Fix many path-related issues when loading images in external tilesets
-- Add basic automated tests with golden images
-- Improve the names of some generated enums
+- Fix bad door tiles in example project map.
+- Fix many path-related issues when loading images in external tilesets.
+- Add basic automated tests with golden images.
+- Improve the names of some generated enums.
 
 ## 0.1.2
 
