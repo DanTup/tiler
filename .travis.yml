@@ -22,6 +22,13 @@ cache:
     - flutter
 
 before_install:
+  - function flutter {
+      if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+        command flutter.bat "$@";
+      else
+        command flutter "$@";
+      fi
+    }
   - echo Downloading Flutter...
   - mkdir -p flutter
   - cd flutter
@@ -36,10 +43,10 @@ before_install:
   - git checkout origin/$FLUTTER_BRANCH
   - cd ..
   - echo Configuring Flutter...
-  - flutter/bin/flutter config --no-analytics
-  - flutter/bin/flutter doctor
-  - flutter/bin/flutter --version
   - export PATH=$PWD/flutter/bin:$PATH
+  - flutter config --no-analytics
+  - flutter doctor
+  - flutter --version
 
 install:
   - flutter packages get
