@@ -37,7 +37,6 @@ before_install:
   - cd ..
   - echo Configuring Flutter...
   - flutter/bin/flutter config --no-analytics
-  - flutter/bin/flutter update-packages
   - flutter/bin/flutter doctor
   - flutter/bin/flutter --version
   - export PATH=$PWD/flutter/bin:$PATH
