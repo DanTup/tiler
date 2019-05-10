@@ -43,7 +43,7 @@ class TiledJsonSpecParser {
         .map((m) => m.group(1) ?? 'none')
         .toSet()
         .toList();
-    return EnumDefinition('$className${_upperFirst(f.name)}',
+    return EnumDefinition('$className${_upperFirst(_improveName('', f.name))}',
         values.map(_generateEnumValue).toList());
   }
 
@@ -106,6 +106,7 @@ class TiledJsonSpecParser {
       'draworder': 'drawOrder',
       'edgecolors': 'edgeColors',
       'firstgid': 'firstGid',
+      'halign': 'horizontalAlign',
       'hexsidelength': 'hexSideLength',
       'hflip': 'flippedHorizontally',
       'imageheight': 'imageHeight',
@@ -116,9 +117,9 @@ class TiledJsonSpecParser {
       'nextlayerid': 'nextLayerId',
       'nextobjectid': 'nextObjectId',
       'object': 'mapObject',
-      'objecttemplate': 'objectTemplate',
       'objectgroup': 'objectGroup',
       'objectgrouplayer': 'objectGroupLayer',
+      'objecttemplate': 'objectTemplate',
       'offsetx': 'offsetX',
       'offsety': 'offsetY',
       'renderorder': 'renderOrder',
@@ -137,11 +138,12 @@ class TiledJsonSpecParser {
       'tilewidth': 'tileWidth',
       'topdown': 'topDown',
       'transparentcolor': 'transparentColor',
+      'valign': 'verticalAlign',
       'vflip': 'flippedVertically',
-      'wangid': 'wangId',
       'wangcolor': 'wangColor',
-      'wangsets': 'wangSets',
+      'wangid': 'wangId',
       'wangset': 'wangSet',
+      'wangsets': 'wangSets',
       'wangtile': 'wangTile',
       'wangtiles': 'wangTiles',
     };

@@ -476,7 +476,7 @@ class ObjectText {
   ObjectText(
     this.color,
     this.fontfamily,
-    this.halign,
+    this.horizontalAlign,
     this.isBold,
     this.isItalic,
     this.isKerning,
@@ -485,7 +485,7 @@ class ObjectText {
     this.isWrap,
     this.pixelsize,
     this.text,
-    this.valign,
+    this.verticalAlign,
   );
   factory ObjectText.fromJson(Map<String, dynamic> json) =>
       _$ObjectTextFromJson(json);
@@ -498,8 +498,8 @@ class ObjectText {
   final String fontfamily;
 
   /// Horizontal alignment (center, right, justify or left (default))
-  @JsonKey(defaultValue: ObjectTextHalign.left)
-  final ObjectTextHalign halign;
+  @JsonKey(name: 'halign', defaultValue: ObjectTextHorizontalAlign.left)
+  final ObjectTextHorizontalAlign horizontalAlign;
 
   /// Whether to use a bold font (default: false)
   @JsonKey(name: 'bold', defaultValue: false)
@@ -533,18 +533,18 @@ class ObjectText {
   final String text;
 
   /// Vertical alignment (center, bottom or top (default))
-  @JsonKey(defaultValue: ObjectTextValign.top)
-  final ObjectTextValign valign;
+  @JsonKey(name: 'valign', defaultValue: ObjectTextVerticalAlign.top)
+  final ObjectTextVerticalAlign verticalAlign;
 }
 
-enum ObjectTextHalign {
+enum ObjectTextHorizontalAlign {
   center,
   right,
   justify,
   left,
 }
 
-enum ObjectTextValign {
+enum ObjectTextVerticalAlign {
   center,
   bottom,
   top,

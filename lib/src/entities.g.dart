@@ -423,9 +423,12 @@ ObjectText _$ObjectTextFromJson(Map<String, dynamic> json) {
     final val = ObjectText(
         $checkedConvert(json, 'color', (v) => v as String),
         $checkedConvert(json, 'fontfamily', (v) => v as String) ?? 'sans-serif',
-        $checkedConvert(json, 'halign',
-                (v) => _$enumDecodeNullable(_$ObjectTextHalignEnumMap, v)) ??
-            ObjectTextHalign.left,
+        $checkedConvert(
+                json,
+                'halign',
+                (v) => _$enumDecodeNullable(
+                    _$ObjectTextHorizontalAlignEnumMap, v)) ??
+            ObjectTextHorizontalAlign.left,
         $checkedConvert(json, 'bold', (v) => v as bool) ?? false,
         $checkedConvert(json, 'italic', (v) => v as bool) ?? false,
         $checkedConvert(json, 'kerning', (v) => v as bool) ?? true,
@@ -434,31 +437,36 @@ ObjectText _$ObjectTextFromJson(Map<String, dynamic> json) {
         $checkedConvert(json, 'wrap', (v) => v as bool) ?? false,
         $checkedConvert(json, 'pixelsize', (v) => v as int) ?? 16,
         $checkedConvert(json, 'text', (v) => v as String),
-        $checkedConvert(json, 'valign',
-                (v) => _$enumDecodeNullable(_$ObjectTextValignEnumMap, v)) ??
-            ObjectTextValign.top);
+        $checkedConvert(
+                json,
+                'valign',
+                (v) => _$enumDecodeNullable(
+                    _$ObjectTextVerticalAlignEnumMap, v)) ??
+            ObjectTextVerticalAlign.top);
     return val;
   }, fieldKeyMap: const {
+    'horizontalAlign': 'halign',
     'isBold': 'bold',
     'isItalic': 'italic',
     'isKerning': 'kerning',
     'isStrikeout': 'strikeout',
     'isUnderline': 'underline',
-    'isWrap': 'wrap'
+    'isWrap': 'wrap',
+    'verticalAlign': 'valign'
   });
 }
 
-const _$ObjectTextHalignEnumMap = <ObjectTextHalign, dynamic>{
-  ObjectTextHalign.center: 'center',
-  ObjectTextHalign.right: 'right',
-  ObjectTextHalign.justify: 'justify',
-  ObjectTextHalign.left: 'left'
+const _$ObjectTextHorizontalAlignEnumMap = <ObjectTextHorizontalAlign, dynamic>{
+  ObjectTextHorizontalAlign.center: 'center',
+  ObjectTextHorizontalAlign.right: 'right',
+  ObjectTextHorizontalAlign.justify: 'justify',
+  ObjectTextHorizontalAlign.left: 'left'
 };
 
-const _$ObjectTextValignEnumMap = <ObjectTextValign, dynamic>{
-  ObjectTextValign.center: 'center',
-  ObjectTextValign.bottom: 'bottom',
-  ObjectTextValign.top: 'top'
+const _$ObjectTextVerticalAlignEnumMap = <ObjectTextVerticalAlign, dynamic>{
+  ObjectTextVerticalAlign.center: 'center',
+  ObjectTextVerticalAlign.bottom: 'bottom',
+  ObjectTextVerticalAlign.top: 'top'
 };
 
 Point _$PointFromJson(Map<String, dynamic> json) {
