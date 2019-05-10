@@ -1,0 +1,3 @@
+[submodule "test/test-levels"]
+	path = test/test-levels
+	url = https://github.com/DanTup/tiler-test-levels
