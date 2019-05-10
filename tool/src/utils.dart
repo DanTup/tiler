@@ -13,7 +13,8 @@ Future<String> fetch(Uri uri) async {
 }
 
 Future<void> formatFile(File file) async {
-  final res = await Process.run('dartfmt', ['-w', file.path]);
+  final dartfmt = Platform.isWindows ? 'dartfmt.bat' : 'dartfmt';
+  final res = await Process.run(dartfmt, ['-w', file.path]);
   if (res.exitCode != 0) {
     throw Exception('${res.stderr}\n\n${res.stdout}'.trim());
   }
