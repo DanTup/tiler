@@ -31,7 +31,8 @@ Future<void> expectMapRender(
   );
 }
 
-String goldenFile(String name) => 'test-maps/$name.png';
+String goldenFile(String name) =>
+    'test-maps/${name}_${Platform.operatingSystem}.png';
 
 String mapFile(String name) => 'test-maps/$name.json';
 
