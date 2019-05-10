@@ -32,9 +32,9 @@ Future<void> expectMapRender(
   );
 }
 
-String goldenFile(String name) => 'test-levels/$name.png';
+String goldenFile(String name) => 'test-maps/$name.png';
 
-String mapFile(String name) => 'test-levels/$name.json';
+String mapFile(String name) => 'test-maps/$name.json';
 
 class _DiskAssetBundle extends AssetBundle {
   final String rootFolder;

@@ -1,3 +1,3 @@
-[submodule "test/test-levels"]
-	path = test/test-levels
-	url = https://github.com/DanTup/tiler-test-levels
+[submodule "test/test-maps"]
+	path = test/test-maps
+	url = https://github.com/DanTup/tiler-test-maps
