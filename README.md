@@ -1,6 +1,6 @@
 # Tiler
 
-A library for rendering maps created with the Tiled map editor in Dart/Flutter.
+A [Dart/Flutter library](https://pub.dev/packages/tiler) for rendering maps created with the Tiled map editor in Dart/Flutter.
 
 Example map in the [Tiled](https://www.mapeditor.org/) editor:
 
