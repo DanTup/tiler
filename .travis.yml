@@ -1,0 +1,50 @@
+os:
+  - osx
+  - linux
+  - windows
+
+language: node_js
+node_js: lts/*
+
+env:
+  matrix:
+    - FLUTTER_BRANCH=stable
+    - FLUTTER_BRANCH=dev
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - env: FLUTTER_BRANCH=DEV
+
+cache:
+  directories:
+    - $HOME/.pub-cache
+    - flutter
+
+before_install:
+  - echo Downloading Flutter...
+  - mkdir -p flutter
+  - cd flutter
+  - if [[ ! -d .git ]]; then
+      git init;
+      git remote add origin https://github.com/flutter/flutter.git;
+    else
+      git remote set-url origin https://github.com/flutter/flutter.git;
+    fi
+  - git fetch
+  - git reset --hard origin/$FLUTTER_BRANCH
+  - git checkout origin/$FLUTTER_BRANCH
+  - cd ..
+  - echo Configuring Flutter...
+  - flutter/bin/flutter config --no-analytics
+  - flutter/bin/flutter update-packages
+  - flutter/bin/flutter doctor
+  - flutter/bin/flutter --version
+  - export PATH=$PWD/flutter/bin:$PATH
+
+install:
+  - flutter packages get
+
+script:
+  # TODO: Analyze, lint, etc.
+  - flutter test test
