@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Fix incorrect rendering of tiles that are both rotated and flipped.
+
 ## 0.1.3
 
 - Fix bad door tiles in example project map.
