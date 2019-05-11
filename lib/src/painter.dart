@@ -253,9 +253,9 @@ class TileMapPainter extends CustomPainter {
     }
 
     // Extract the flip bits (bit 32, 21, 30).
-    final flippedHorizontally = tileGid & _bit32flippedHorizontally != 0;
-    final flippedVertically = tileGid & _bit31flippedVertically != 0;
-    final flippedAntiDiagnocally = tileGid & _bit30flippedAntiDiagonally != 0;
+    final flipHorizontal = tileGid & _bit32flippedHorizontally != 0;
+    final flipVertical = tileGid & _bit31flippedVertically != 0;
+    final flipAntiDiagonal = tileGid & _bit30flippedAntiDiagonally != 0;
 
     // Remove the top 3 bits that were flags.
     tileGid = tileGid & _low29bits;
@@ -304,49 +304,17 @@ class TileMapPainter extends CustomPainter {
       ts.tileHeight.toDouble(),
     );
 
-    var needsRestore = false;
-    if (flippedAntiDiagnocally) {
-      if (!needsRestore) {
-        canvas.save();
-        needsRestore = true;
-      }
-      final dx = destRect.left + destRect.width / 2.0;
-      final dy = destRect.top + destRect.height / 2.0;
-      canvas
-        ..translate(dx, dy)
-        ..rotate(90 * pi / 180)
-        ..scale(1, -1)
-        ..translate(-dx, -dy);
-    }
-    if (flippedHorizontally) {
-      if (!needsRestore) {
-        canvas.save();
-        needsRestore = true;
-      }
-      final dx = destRect.left + destRect.width / 2.0;
-      canvas
-        ..translate(dx, 0)
-        ..scale(-1, 1)
-        ..translate(-dx, 0);
-    }
-    if (flippedVertically) {
-      if (!needsRestore) {
-        canvas.save();
-        needsRestore = true;
-      }
-      final dy = destRect.top + destRect.height / 2.0;
-      canvas
-        ..translate(0, dy)
-        ..scale(1, -1)
-        ..translate(0, -dy);
-    }
-    if (flippedAntiDiagnocally) {
-      // TODO: This
-    }
-    canvas.drawImageRect(image, sourceRect, destRect, _paint);
-    if (needsRestore) {
-      canvas.restore();
-    }
+    final dx = destRect.left + destRect.width / 2.0;
+    final dy = destRect.top + destRect.height / 2.0;
+    canvas
+      ..save()
+      ..translate(dx, dy)
+      ..scale(flipHorizontal ? -1 : 1, flipVertical ? -1 : 1)
+      ..rotate(flipAntiDiagonal ? -90 * pi / 180 : 0)
+      ..scale(flipAntiDiagonal ? -1 : 1, 1)
+      ..translate(-dx, -dy)
+      ..drawImageRect(image, sourceRect, destRect, _paint)
+      ..restore();
   }
 
   void _paintTileLayer(Canvas canvas, int elapsedMs, Size size, TileLayer layer,
