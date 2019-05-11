@@ -4,6 +4,6 @@ import 'utils.dart';
 
 void main() {
   testWidgets('layers', (tester) async {
-    await expectMapRender(tester, 'offsets/layers', 'offsets/layers');
+    await expectMapRender(tester, 'offsets/layers');
   });
 }

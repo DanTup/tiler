@@ -4,6 +4,6 @@ import 'utils.dart';
 
 void main() {
   testWidgets('tileset', (tester) async {
-    await expectMapRender(tester, 'embedded/tileset', 'embedded/tileset');
+    await expectMapRender(tester, 'embedded/tileset');
   });
 }
