@@ -367,10 +367,10 @@ class MapObject {
   /// String assigned to name field in editor
   final String name;
 
-  /// A list of x,y coordinates in pixels
+  /// Array of :ref:`Points <json-point>`, in case the object is a polygon
   final List<Point> polygon;
 
-  /// A list of x,y coordinates in pixels
+  /// Array of :ref:`Points <json-point>`, in case the object is a polyline
   final List<Point> polyline;
 
   /// Array of :ref:`Properties <json-property>`
@@ -382,8 +382,8 @@ class MapObject {
   /// Reference to a template file, in case object is a :doc:`template instance </manual/using-templates>`
   final String template;
 
-  /// In case of text objects, instance of :ref:`json-object-text`
-  final dynamic text;
+  /// Only used for text objects
+  final ObjectText text;
 
   /// String assigned to type field in editor
   final String type;
@@ -542,6 +542,21 @@ enum ObjectTextVerticalAlign {
   center,
   bottom,
   top,
+}
+
+@JsonSerializable()
+class Point {
+  Point(
+    this.x,
+    this.y,
+  );
+  factory Point.fromJson(Map<String, dynamic> json) => _$PointFromJson(json);
+
+  /// X coordinate in pixels
+  final double x;
+
+  /// Y coordinate in pixels
+  final double y;
 }
 
 @JsonSerializable()
