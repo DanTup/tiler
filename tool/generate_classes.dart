@@ -18,16 +18,16 @@ Future<void> main() async {
   final parser = TiledJsonSpecParser();
 
   // Add any custom definitions for things the JSON spec assumes exist.
-  final customDefs = [
-    ClassDefinition(
-      // TODO: Remove this is Point is added to the spec
-      // https://github.com/bjorn/tiled/issues/2116
-      'Point',
-      [
-        FieldDefinition('x', 'x', 'double', '', null),
-        FieldDefinition('y', 'y', 'double', '', null),
-      ],
-    )
+  final customDefs = <ClassDefinition>[
+    // ClassDefinition(
+    //   // TODO: Remove this is Point is added to the spec
+    //   // https://github.com/bjorn/tiled/issues/2116
+    //   'Point',
+    //   [
+    //     FieldDefinition('x', 'x', 'double', '', null),
+    //     FieldDefinition('y', 'y', 'double', '', null),
+    //   ],
+    // )
   ];
 
   final doc = await fetch(specUri);
