@@ -300,7 +300,12 @@ MapObject _$MapObjectFromJson(Map<String, dynamic> json) {
                 ?.toList()),
         $checkedConvert(json, 'rotation', (v) => (v as num)?.toDouble()),
         $checkedConvert(json, 'template', (v) => v as String),
-        $checkedConvert(json, 'text', (v) => v),
+        $checkedConvert(
+            json,
+            'text',
+            (v) => v == null
+                ? null
+                : ObjectText.fromJson(v as Map<String, dynamic>)),
         $checkedConvert(json, 'type', (v) => v as String),
         $checkedConvert(json, 'width', (v) => (v as num)?.toDouble()),
         $checkedConvert(json, 'x', (v) => (v as num)?.toDouble()),
