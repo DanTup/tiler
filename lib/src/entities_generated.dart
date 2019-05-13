@@ -559,19 +559,6 @@ class Point {
   final double y;
 }
 
-@JsonSerializable()
-class Point {
-  Point(
-    this.x,
-    this.y,
-  );
-  factory Point.fromJson(Map<String, dynamic> json) => _$PointFromJson(json);
-
-  final double x;
-
-  final double y;
-}
-
 abstract class Property {
   Property(
     this.name,
