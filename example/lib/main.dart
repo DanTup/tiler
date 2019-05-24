@@ -54,7 +54,8 @@ class _TileMapWidgetState extends State<TileMapWidget> {
                 (map.width * map.tileWidth).toDouble(),
                 (map.height * map.tileHeight).toDouble(),
               ),
-              sw.elapsedMilliseconds,
+              scale: 0.2,
+              elapsedMilliseconds: sw.elapsedMilliseconds,
             ),
           );
         } else if (snapshot.hasError) {

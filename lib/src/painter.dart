@@ -29,6 +29,7 @@ class TileMapPainter extends CustomPainter {
   final Map<int, int> _tileSetsFirstGidForTileGid = {};
   final Map<Tileset, Map<int, Tile>> _tilesById = {};
   final Offset _offset;
+  final double _scale;
   final int _elapsedMs;
   final bool _debugMode;
 
@@ -42,14 +43,17 @@ class TileMapPainter extends CustomPainter {
 
   TileMapPainter(
     this._loadedMap,
-    this._offset,
-    this._elapsedMs, {
+    this._offset, {
+    int elapsedMs = 0,
+    double scale = 1,
     bool debugMode = false,
   })  : assert(_loadedMap != null),
         assert(_loadedMap.map != null),
         assert(_loadedMap.mapImages != null),
         assert(_loadedMap.externalTilesets != null),
         assert(_loadedMap.tilesetImages != null),
+        _elapsedMs = elapsedMs,
+        _scale = scale,
         _debugMode = debugMode,
         _backgroundPaint = _loadedMap.map.backgroundColor != null
             ? (Paint()..color = colorFromHex(_loadedMap.map.backgroundColor))
@@ -76,7 +80,8 @@ class TileMapPainter extends CustomPainter {
 
     canvas
       ..save()
-      ..translate(-_offset.dx, -_offset.dy);
+      ..translate(-_offset.dx, -_offset.dy)
+      ..scale(_scale);
 
     if (_backgroundPaint != null) {
       canvas.drawPaint(_backgroundPaint);
@@ -356,17 +361,26 @@ class TileMapPainter extends CustomPainter {
 class VisibleArea {
   final Offset _offset;
   final Size _size;
+  final double _scale;
   final int _tileWidth, _tileHeight;
   final Rect rect;
   final int firstCol, lastCol, firstRow, lastRow;
 
-  VisibleArea(this._offset, this._size, this._tileWidth, this._tileHeight)
+  VisibleArea(
+      this._offset, this._size, this._scale, this._tileWidth, this._tileHeight)
       : rect = Rect.fromLTWH(_offset.dx, _offset.dy, _size.width, _size.height),
         firstCol = (_offset.dx / _tileWidth).floor(),
-        lastCol = ((_offset.dx + _size.width) / _tileWidth).floor(),
+        lastCol =
+            ((_offset.dx + _size.width * 1 / _scale) / _tileWidth).floor(),
         firstRow = (_offset.dy / _tileHeight).floor(),
-        lastRow = ((_offset.dy + _size.height) / _tileHeight).floor();
+        lastRow =
+            ((_offset.dy + _size.height * 1 / _scale) / _tileHeight).floor();
 
   VisibleArea translate(double offsetX, double offsetY) => VisibleArea(
-      _offset.translate(offsetX, offsetY), _size, _tileWidth, _tileHeight);
+        _offset.translate(offsetX, offsetY),
+        _size,
+        _scale,
+        _tileWidth,
+        _tileHeight,
+      );
 }

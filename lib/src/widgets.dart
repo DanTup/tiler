@@ -7,14 +7,16 @@ class TileMap extends StatelessWidget {
   final LoadedTileMap loadedMap;
   final Offset offset;
   final Size size;
+  final double scale;
   final int elapsedMilliseconds;
 
   const TileMap(
     this.loadedMap,
     this.offset,
-    this.size, [
+    this.size, {
+    this.scale = 1,
     this.elapsedMilliseconds = 0,
-  ]);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,8 @@ class TileMap extends StatelessWidget {
       painter: TileMapPainter(
         loadedMap,
         offset,
-        elapsedMilliseconds,
+        scale: scale,
+        elapsedMs: elapsedMilliseconds,
       ),
       size: size,
     );
