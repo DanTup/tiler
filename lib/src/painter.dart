@@ -391,6 +391,9 @@ class VisibleArea {
   final Rect rect;
   final int firstCol, lastCol, firstRow, lastRow;
 
+  // TODO: this doesn't work for isometric maps, since the visible grid is not
+  // a uniform grid :(
+
   VisibleArea(
       this._offset, this._size, this._scale, this._tileWidth, this._tileHeight)
       : rect = Rect.fromLTWH(_offset.dx, _offset.dy, _size.width, _size.height),
