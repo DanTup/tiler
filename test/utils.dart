@@ -10,13 +10,24 @@ import 'package:tiler/tiler.dart';
 /// A bundle for tests.
 final _DiskAssetBundle testBundle = _DiskAssetBundle('test');
 
-Future<void> expectMapRender(
-  WidgetTester tester,
+void testMapRender(
   String mapName, [
   String goldenName,
   Offset offset = Offset.zero,
   Size size = const Size(1000, 1000),
-]) async {
+]) {
+  testWidgets('csv', (tester) async {
+    await expectMapRender(tester, mapName, goldenName, offset, size);
+  });
+}
+
+Future<void> expectMapRender(
+  WidgetTester tester,
+  String mapName,
+  String goldenName,
+  Offset offset,
+  Size size,
+) async {
   final map = await tester.runAsync(
     () => loadMap(testBundle, mapFile(mapName)),
   );
