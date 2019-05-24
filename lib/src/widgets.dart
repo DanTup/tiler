@@ -9,6 +9,7 @@ class TileMap extends StatelessWidget {
   final Size size;
   final double scale;
   final int elapsedMilliseconds;
+  final bool debugMode;
 
   const TileMap(
     this.loadedMap,
@@ -16,6 +17,7 @@ class TileMap extends StatelessWidget {
     this.size, {
     this.scale = 1,
     this.elapsedMilliseconds = 0,
+    this.debugMode,
   });
 
   @override
@@ -26,6 +28,7 @@ class TileMap extends StatelessWidget {
         offset,
         scale: scale,
         elapsedMs: elapsedMilliseconds,
+        debugMode: debugMode,
       ),
       size: size,
     );
