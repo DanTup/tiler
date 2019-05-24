@@ -75,6 +75,7 @@ class TileMapPainter extends CustomPainter {
     canvas
       ..save()
       ..translate(-_offset.dx, -_offset.dy)
+      ..save()
       ..scale(_scale);
 
     if (_backgroundPaint != null) {
@@ -85,6 +86,7 @@ class TileMapPainter extends CustomPainter {
       _paintLayer(canvas, _elapsedMs, size, layer, visible);
     }
 
+    canvas.restore();
     if (_debugMode) {
       canvas.drawRect(visible.rect, _debugBorderPaint);
     }
