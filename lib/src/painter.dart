@@ -23,10 +23,7 @@ Color colorFromHex(String hexColor) {
 /// A [CustomPainter] for rendering [LoadedTileMap]s.
 class TileMapPainter extends CustomPainter {
   final LoadedTileMap _loadedMap;
-  final Map<int, Tileset> _tileSetForGid = {};
-  // TODO: This is messy... can we merge the Tileset from the definition + external
-  // file somehow without making everything mutable?
-  final Map<int, int> _tileSetsFirstGidForTileGid = {};
+  final Map<int, Tileset> _tileSetForFirstGid = {};
   final Map<Tileset, Map<int, Tile>> _tilesById = {};
   final Offset _offset;
   final double _scale;
@@ -61,10 +58,7 @@ class TileMapPainter extends CustomPainter {
     for (final ts in _loadedMap.map.tilesets ?? const <Tileset>[]) {
       final actualTs =
           ts.source != null ? _loadedMap.externalTilesets[ts.source] : ts;
-      for (var i = 0; i < actualTs.tileCount; i++) {
-        _tileSetForGid[ts.firstGid + i] = actualTs;
-        _tileSetsFirstGidForTileGid[ts.firstGid + i] = ts.firstGid;
-      }
+      _tileSetForFirstGid[ts.firstGid] = actualTs;
       _tilesById[actualTs] = {};
       for (final tile in actualTs.tiles ?? const <Tile>[]) {
         _tilesById[actualTs][tile.id] = tile;
@@ -75,8 +69,8 @@ class TileMapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // TODO: RenderOrder, etc.
-    final visible = VisibleArea(
-        _offset, size, _loadedMap.map.tileWidth, _loadedMap.map.tileHeight);
+    final visible = VisibleArea(_offset, size, _scale, _loadedMap.map.tileWidth,
+        _loadedMap.map.tileHeight);
 
     canvas
       ..save()
@@ -265,9 +259,14 @@ class TileMapPainter extends CustomPainter {
     // Remove the top 3 bits that were flags.
     tileGid = tileGid & _low29bits;
 
-    final ts = _tileSetForGid[tileGid];
-    var tileIndex = tileGid - _tileSetsFirstGidForTileGid[tileGid];
-    final tileData = _tilesById[ts][tileIndex];
+    var ts = _loadedMap.map.tilesets.lastWhere((ts) => ts.firstGid <= tileGid);
+    // firstGid is always on the map tileset, not external.
+    final firstGid = ts.firstGid;
+    if (ts.source != null) {
+      ts = _loadedMap.externalTilesets[ts.source];
+    }
+    var tileIndex = tileGid - firstGid;
+    var tileData = _tilesById[ts][tileIndex];
 
     // If we're an animated file, we may need to swap the index based on the animation
     if (tileData != null &&
@@ -286,22 +285,33 @@ class TileMapPainter extends CustomPainter {
         frameStart += f.duration;
         return false;
       }).tileId;
+      tileData = _tilesById[ts][tileIndex];
     }
 
-    final image = _loadedMap.tilesetImages[ts][ts.image];
+    final image = _loadedMap.tilesetImages[ts][tileData?.image ?? ts.image];
     assert(image != null);
+
     // TODO: Margin
     // TODO: TileOffset
     // TODO: TransparentColor
-    // TODO: Tile image?!!!!!!!!!!!!!!!!!!
-    final tileColInImage = tileIndex % ts.columns;
-    final tileRowInImage = (tileIndex / ts.columns).floor();
-    final sourceRect = Rect.fromLTWH(
-      (tileColInImage * ts.tileWidth).toDouble(),
-      (tileRowInImage * ts.tileHeight).toDouble(),
-      ts.tileWidth.toDouble(),
-      ts.tileHeight.toDouble(),
-    );
+    Rect sourceRect;
+    if (tileData?.image != null) {
+      sourceRect = Rect.fromLTWH(
+        0,
+        0,
+        tileData.imageWidth.toDouble(),
+        tileData.imageHeight.toDouble(),
+      );
+    } else {
+      final tileColInImage = tileIndex % ts.columns;
+      final tileRowInImage = (tileIndex / ts.columns).floor();
+      sourceRect = Rect.fromLTWH(
+        (tileColInImage * ts.tileWidth).toDouble(),
+        (tileRowInImage * ts.tileHeight).toDouble(),
+        ts.tileWidth.toDouble(),
+        ts.tileHeight.toDouble(),
+      );
+    }
     final destRect = Rect.fromLTWH(
       x,
       y,
