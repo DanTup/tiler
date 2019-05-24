@@ -353,15 +353,30 @@ class TileMapPainter extends CustomPainter {
     final lastVisibleCol = min(visible.lastCol, _loadedMap.map.width - 1);
     final firstVisibleRow = max(visible.firstRow, 0);
     final lastVisibleRow = min(visible.lastRow, _loadedMap.map.height - 1);
-    for (var x = firstVisibleCol; x <= lastVisibleCol; x++) {
-      for (var y = firstVisibleRow; y <= lastVisibleRow; y++) {
-        final tileGid = layer.data[y * layer.width + x];
+    for (var tileX = firstVisibleCol; tileX <= lastVisibleCol; tileX++) {
+      for (var tileY = firstVisibleRow; tileY <= lastVisibleRow; tileY++) {
+        final tileGid = layer.data[tileY * layer.width + tileX];
+        double x, y;
+        switch (_loadedMap.map.orientation) {
+          case TileMapOrientation.orthogonal:
+            x = tileX * _loadedMap.map.tileWidth.toDouble();
+            y = tileY * _loadedMap.map.tileHeight.toDouble();
+            break;
+          case TileMapOrientation.isometric:
+            x = tileX * _loadedMap.map.tileWidth / 2 -
+                tileY * _loadedMap.map.tileWidth / 2;
+            y = tileY * _loadedMap.map.tileHeight.toDouble() / 2 +
+                tileX * _loadedMap.map.tileHeight / 2;
+            break;
+          default:
+            throw UnimplementedError();
+        }
         _paintTile(
           canvas,
           elapsedMs,
           tileGid,
-          (x * _loadedMap.map.tileWidth).toDouble(),
-          (y * _loadedMap.map.tileHeight).toDouble(),
+          x,
+          y,
         );
       }
     }
