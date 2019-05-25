@@ -34,7 +34,7 @@ class TileMapPainter extends CustomPainter {
   final Paint _paint = Paint();
   final Paint _backgroundPaint;
   final Paint _debugBorderPaint = Paint()
-    ..strokeWidth = 2
+    ..strokeWidth = 10
     ..color = Colors.red
     ..style = PaintingStyle.stroke;
 
@@ -69,8 +69,13 @@ class TileMapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // TODO: RenderOrder, etc.
-    final visible = VisibleArea(_offset, size, _scale, _loadedMap.map.tileWidth,
-        _loadedMap.map.tileHeight);
+    final visible = VisibleArea(
+      _offset,
+      size,
+      _scale,
+      _loadedMap.map.tileWidth,
+      _loadedMap.map.tileHeight,
+    );
 
     canvas
       ..save()
@@ -88,7 +93,9 @@ class TileMapPainter extends CustomPainter {
 
     canvas.restore();
     if (_debugMode) {
-      canvas.drawRect(visible.rect, _debugBorderPaint);
+      canvas.drawRect(
+          Rect.fromLTWH(_offset.dx, _offset.dy, size.width, size.height),
+          _debugBorderPaint);
     }
     canvas.restore();
 
@@ -96,14 +103,17 @@ class TileMapPainter extends CustomPainter {
       TextPainter(
         text: TextSpan(
           style: TextStyle(color: Colors.white, backgroundColor: Colors.red),
-          text: '$_offset\n'
+          text: 'Screen $_offset\n'
+              'Map ${visible.rect.topLeft}\n'
+              'Map ${visible.rect.size}\n'
+              'Grid Size(${_loadedMap.map.tileWidth}, ${_loadedMap.map.tileHeight}\n'
               'Rendering cols ${visible.firstCol} - ${visible.lastCol}\n'
               'Rendering rows ${visible.firstRow} - ${visible.lastRow}\n',
         ),
         textDirection: TextDirection.ltr,
       )
         ..layout()
-        ..paint(canvas, const Offset(100, 400));
+        ..paint(canvas, const Offset(20, 300));
     }
   }
 
@@ -240,15 +250,14 @@ class TileMapPainter extends CustomPainter {
         return;
       }
       if (_isTile(obj)) {
-        _paintTile(canvas, elapsedMs, obj.gid, obj.x, obj.y);
+        _paintTile(canvas, elapsedMs, obj.gid, obj.x.round(), obj.y.round());
       } else if (_debugMode) {
         _paintObjectDebug(obj, rect, canvas);
       }
     }
   }
 
-  void _paintTile(
-      Canvas canvas, int elapsedMs, int tileGid, double x, double y) {
+  void _paintTile(Canvas canvas, int elapsedMs, int tileGid, int x, int y) {
     if (tileGid == null || tileGid == 0) {
       return;
     }
@@ -315,8 +324,10 @@ class TileMapPainter extends CustomPainter {
       );
     }
     final destRect = Rect.fromLTWH(
-      x,
-      y,
+      // Offset the difference between actual tile size and grid size to account
+      // for tall isometric maps.
+      (x - ts.tileWidth + _loadedMap.map.tileWidth).toDouble(),
+      (y - ts.tileHeight + _loadedMap.map.tileHeight).toDouble(),
       ts.tileWidth.toDouble(),
       ts.tileHeight.toDouble(),
     );
@@ -351,35 +362,41 @@ class TileMapPainter extends CustomPainter {
     //final image = images[layer.image];
     // TODO: use drawAtlas for performance?
 
-    final firstVisibleCol = max(visible.firstCol, 0);
-    final lastVisibleCol = min(visible.lastCol, _loadedMap.map.width - 1);
-    final firstVisibleRow = max(visible.firstRow, 0);
-    final lastVisibleRow = min(visible.lastRow, _loadedMap.map.height - 1);
-    for (var tileX = firstVisibleCol; tileX <= lastVisibleCol; tileX++) {
-      for (var tileY = firstVisibleRow; tileY <= lastVisibleRow; tileY++) {
-        final tileGid = layer.data[tileY * layer.width + tileX];
-        double x, y;
+    for (var orthoX = visible.firstCol; orthoX <= visible.lastCol; orthoX++) {
+      for (var orthoY = visible.firstRow; orthoY <= visible.lastRow; orthoY++) {
+        int tileIndex, screenX, screenY;
         switch (_loadedMap.map.orientation) {
           case TileMapOrientation.orthogonal:
-            x = tileX * _loadedMap.map.tileWidth.toDouble();
-            y = tileY * _loadedMap.map.tileHeight.toDouble();
+            tileIndex = orthoY * layer.width + orthoX;
+            screenX = orthoX * visible.tileWidth;
+            screenY = orthoY * visible.tileHeight;
             break;
           case TileMapOrientation.isometric:
-            x = tileX * _loadedMap.map.tileWidth / 2 -
-                tileY * _loadedMap.map.tileWidth / 2;
-            y = tileY * _loadedMap.map.tileHeight.toDouble() / 2 +
-                tileX * _loadedMap.map.tileHeight / 2;
+            screenX = orthoX * visible.tileHalfWidth;
+            screenY = orthoY * visible.tileHeight +
+                (orthoX.isOdd ? visible.tileHalfHeight : 0);
+
+            // Floor or ceil?
+            final tileX = ((screenX / visible.tileHalfWidth +
+                        screenY / visible.tileHalfHeight) /
+                    2)
+                .ceil();
+            final tileY = ((screenY / visible.tileHalfHeight -
+                        screenX / visible.tileHalfWidth) /
+                    2)
+                .ceil();
+
+            tileIndex = tileY * layer.width + tileX;
             break;
           default:
             throw UnimplementedError();
         }
-        _paintTile(
-          canvas,
-          elapsedMs,
-          tileGid,
-          x,
-          y,
-        );
+
+        if (tileIndex >= 0 && tileIndex < layer.data.length) {
+          final gid = layer.data[tileIndex];
+
+          _paintTile(canvas, elapsedMs, gid, screenX, screenY);
+        }
       }
     }
   }
@@ -389,28 +406,63 @@ class VisibleArea {
   final Offset _offset;
   final Size _size;
   final double _scale;
-  final int _tileWidth, _tileHeight;
+  final int tileWidth, tileHeight, tileHalfWidth, tileHalfHeight;
   final Rect rect;
   final int firstCol, lastCol, firstRow, lastRow;
 
   // TODO: this doesn't work for isometric maps, since the visible grid is not
   // a uniform grid :(
 
-  VisibleArea(
-      this._offset, this._size, this._scale, this._tileWidth, this._tileHeight)
-      : rect = Rect.fromLTWH(_offset.dx, _offset.dy, _size.width, _size.height),
-        firstCol = (_offset.dx / _tileWidth).floor(),
-        lastCol =
-            ((_offset.dx + _size.width * 1 / _scale) / _tileWidth).floor(),
-        firstRow = (_offset.dy / _tileHeight).floor(),
-        lastRow =
-            ((_offset.dy + _size.height * 1 / _scale) / _tileHeight).floor();
+  factory VisibleArea(
+    Offset offset,
+    Size size,
+    double scale,
+    int tileWidth,
+    int tileHeight,
+  ) {
+    final rect = Rect.fromLTWH(offset.dx / scale, offset.dy / scale,
+        size.width / scale, size.height / scale);
+    final halfWidth = tileWidth / 2;
+    // -1 is to get the "half" tiles on the odd rows.
+    final orthoTileX = rect.left ~/ halfWidth - 1;
+    final orthoTileY = rect.top ~/ tileHeight - 1;
+    // +1 to account for the shift to get half tiles.
+    final numCols = (rect.width / halfWidth).ceil() + 1;
+    final numRows = (rect.height / tileHeight).ceil() + 1;
+
+    return VisibleArea._(
+      offset,
+      size,
+      scale,
+      tileWidth,
+      tileHeight,
+      rect,
+      orthoTileX,
+      orthoTileX + numCols,
+      orthoTileY,
+      orthoTileY + numRows,
+    );
+  }
+
+  VisibleArea._(
+      this._offset,
+      this._size,
+      this._scale,
+      this.tileWidth,
+      this.tileHeight,
+      this.rect,
+      this.firstCol,
+      this.lastCol,
+      this.firstRow,
+      this.lastRow)
+      : tileHalfWidth = tileWidth ~/ 2,
+        tileHalfHeight = tileHeight ~/ 2;
 
   VisibleArea translate(double offsetX, double offsetY) => VisibleArea(
         _offset.translate(offsetX, offsetY),
         _size,
         _scale,
-        _tileWidth,
-        _tileHeight,
+        tileWidth,
+        tileHeight,
       );
 }
