@@ -362,48 +362,83 @@ class TileMapPainter extends CustomPainter {
     //final image = images[layer.image];
     // TODO: use drawAtlas for performance?
 
-    for (var orthoX = visible.firstCol; orthoX <= visible.lastCol; orthoX++) {
-      for (var orthoY = visible.firstRow; orthoY <= visible.lastRow; orthoY++) {
-        int tileX, tileY, screenX, screenY;
-        switch (_loadedMap.map.orientation) {
-          case TileMapOrientation.orthogonal:
-            screenX = orthoX * visible.tileWidth;
-            screenY = orthoY * visible.tileHeight;
-            tileX = orthoX;
-            tileY = orthoY;
-            break;
-          case TileMapOrientation.isometric:
-            screenX = orthoX * visible.tileHalfWidth;
-            screenY = orthoY * visible.tileHeight +
-                (orthoX.isOdd ? visible.tileHalfHeight : 0);
+    switch (_loadedMap.map.orientation) {
+      case TileMapOrientation.orthogonal:
+        _paintTileLayerOrgthognal(visible, layer, canvas, elapsedMs);
+        break;
+      case TileMapOrientation.isometric:
+        _paintTileLayerIsometric(visible, layer, canvas, elapsedMs);
+        break;
+      default:
+        throw UnimplementedError();
+    }
+  }
 
-            // Floor or ceil?
-            tileX = ((screenX / visible.tileHalfWidth +
-                        screenY / visible.tileHalfHeight) /
-                    2)
-                .ceil();
-            tileY = ((screenY / visible.tileHalfHeight -
-                        screenX / visible.tileHalfWidth) /
-                    2)
-                .ceil();
+  void _paintTileLayerIsometric(
+    VisibleArea visible,
+    TileLayer layer,
+    Canvas canvas,
+    int elapsedMs,
+  ) {
+    for (var orthoY = visible.firstRow; orthoY <= visible.lastRow; orthoY++) {
+      // Make two passes for each row so we can render the odd tiles after the
+      // even tiles on either side.
+      for (final renderEvens in [true, false]) {
+        for (var orthoX = visible.firstCol;
+            orthoX <= visible.lastCol;
+            orthoX++) {
+          if (orthoX.isEven != renderEvens) {
+            continue;
+          }
+          final screenX = orthoX * visible.tileHalfWidth;
+          final screenY = orthoY * visible.tileHeight +
+              (orthoX.isOdd ? visible.tileHalfHeight : 0);
 
-            break;
-          default:
-            throw UnimplementedError();
+          // Floor or ceil?
+          final tileX = ((screenX / visible.tileHalfWidth +
+                      screenY / visible.tileHalfHeight) /
+                  2)
+              .ceil();
+          final tileY = ((screenY / visible.tileHalfHeight -
+                      screenX / visible.tileHalfWidth) /
+                  2)
+              .ceil();
+
+          _paintTileLayerTile(
+              tileX, tileY, layer, canvas, elapsedMs, screenX, screenY);
         }
-
-        if (tileX < 0 ||
-            tileX >= _loadedMap.map.width ||
-            tileY < 0 ||
-            tileY >= _loadedMap.map.height) {
-          continue;
-        }
-
-        final tileIndex = tileY * layer.width + tileX;
-        final gid = layer.data[tileIndex];
-        _paintTile(canvas, elapsedMs, gid, screenX, screenY);
       }
     }
+  }
+
+  void _paintTileLayerOrgthognal(
+    VisibleArea visible,
+    TileLayer layer,
+    Canvas canvas,
+    int elapsedMs,
+  ) {
+    for (var tileX = visible.firstCol; tileX <= visible.lastCol; tileX++) {
+      for (var tileY = visible.firstRow; tileY <= visible.lastRow; tileY++) {
+        final screenX = tileX * visible.tileWidth;
+        final screenY = tileY * visible.tileHeight;
+        _paintTileLayerTile(
+            tileX, tileY, layer, canvas, elapsedMs, screenX, screenY);
+      }
+    }
+  }
+
+  void _paintTileLayerTile(int tileX, int tileY, TileLayer layer, Canvas canvas,
+      int elapsedMs, int screenX, int screenY) {
+    if (tileX < 0 ||
+        tileX >= _loadedMap.map.width ||
+        tileY < 0 ||
+        tileY >= _loadedMap.map.height) {
+      return;
+    }
+
+    final tileIndex = tileY * layer.width + tileX;
+    final gid = layer.data[tileIndex];
+    _paintTile(canvas, elapsedMs, gid, screenX, screenY);
   }
 }
 
