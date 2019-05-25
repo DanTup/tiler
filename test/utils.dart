@@ -11,13 +11,14 @@ import 'package:tiler/tiler.dart';
 final _DiskAssetBundle testBundle = _DiskAssetBundle('test');
 
 void testMapRender(
-  String mapName, [
+  String mapName, {
   String goldenName,
   Offset offset = Offset.zero,
   Size size = const Size(1000, 1000),
-]) {
+  double scale = 1.0,
+}) {
   testWidgets(mapName, (tester) async {
-    await expectMapRender(tester, mapName, goldenName, offset, size);
+    await expectMapRender(tester, mapName, goldenName, offset, size, scale);
   });
 }
 
@@ -27,13 +28,14 @@ Future<void> expectMapRender(
   String goldenName,
   Offset offset,
   Size size,
+  double scale,
 ) async {
   final map = await tester.runAsync(
     () => loadMap(testBundle, mapFile(mapName)),
   );
 
   await tester.pumpWidget(
-    RepaintBoundary(child: TileMap(map, offset, size)),
+    RepaintBoundary(child: TileMap(map, offset, size, scale: scale)),
   );
 
 // TODO: Find a way to make Linux goldens (or to avoid differences
