@@ -17,7 +17,7 @@ class TileMap extends StatelessWidget {
     this.size, {
     this.scale = 1,
     this.elapsedMilliseconds = 0,
-    this.debugMode,
+    this.debugMode = false,
   });
 
   @override
