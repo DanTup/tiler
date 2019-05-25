@@ -364,12 +364,13 @@ class TileMapPainter extends CustomPainter {
 
     for (var orthoX = visible.firstCol; orthoX <= visible.lastCol; orthoX++) {
       for (var orthoY = visible.firstRow; orthoY <= visible.lastRow; orthoY++) {
-        int tileIndex, screenX, screenY;
+        int tileX, tileY, screenX, screenY;
         switch (_loadedMap.map.orientation) {
           case TileMapOrientation.orthogonal:
-            tileIndex = orthoY * layer.width + orthoX;
             screenX = orthoX * visible.tileWidth;
             screenY = orthoY * visible.tileHeight;
+            tileX = orthoX;
+            tileY = orthoY;
             break;
           case TileMapOrientation.isometric:
             screenX = orthoX * visible.tileHalfWidth;
@@ -377,26 +378,30 @@ class TileMapPainter extends CustomPainter {
                 (orthoX.isOdd ? visible.tileHalfHeight : 0);
 
             // Floor or ceil?
-            final tileX = ((screenX / visible.tileHalfWidth +
+            tileX = ((screenX / visible.tileHalfWidth +
                         screenY / visible.tileHalfHeight) /
                     2)
                 .ceil();
-            final tileY = ((screenY / visible.tileHalfHeight -
+            tileY = ((screenY / visible.tileHalfHeight -
                         screenX / visible.tileHalfWidth) /
                     2)
                 .ceil();
 
-            tileIndex = tileY * layer.width + tileX;
             break;
           default:
             throw UnimplementedError();
         }
 
-        if (tileIndex >= 0 && tileIndex < layer.data.length) {
-          final gid = layer.data[tileIndex];
-
-          _paintTile(canvas, elapsedMs, gid, screenX, screenY);
+        if (tileX < 0 ||
+            tileX >= _loadedMap.map.width ||
+            tileY < 0 ||
+            tileY >= _loadedMap.map.height) {
+          continue;
         }
+
+        final tileIndex = tileY * layer.width + tileX;
+        final gid = layer.data[tileIndex];
+        _paintTile(canvas, elapsedMs, gid, screenX, screenY);
       }
     }
   }
