@@ -16,7 +16,7 @@ void testMapRender(
   Offset offset = Offset.zero,
   Size size = const Size(1000, 1000),
 ]) {
-  testWidgets('csv', (tester) async {
+  testWidgets(mapName, (tester) async {
     await expectMapRender(tester, mapName, goldenName, offset, size);
   });
 }
