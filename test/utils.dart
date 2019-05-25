@@ -38,11 +38,9 @@ Future<void> expectMapRender(
     RepaintBoundary(child: TileMap(map, offset, size, scale: scale)),
   );
 
-// TODO: Find a way to make Linux goldens (or to avoid differences
-// across platforms). For now, just skip the check on Linux (doing this
-// rather than skipping the whole test at least exercises the rendering
-// code).
-  if (!Platform.isLinux) {
+  // TODO: Find a way to make goldens the same across platforms). For now, just
+  // run on Windows where most dev is done.
+  if (Platform.isWindows) {
     await expectLater(
       find.byType(RepaintBoundary),
       matchesGoldenFile(goldenFile(goldenName ?? mapName)),
