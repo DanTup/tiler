@@ -252,8 +252,10 @@ class TileMapPainter extends CustomPainter {
       // TODO: We should cache this, includinf the ortho->iso transform.
       // TODO: Handle iso rectangles.
       final rect = _getRectForObject(obj);
+      final correctedRect =
+          Rect.fromPoints(_toOrtho(rect.topLeft), _toOrtho(rect.bottomRight));
       if (!visible.rect
-          .overlaps(rect.translate(layer.offsetX, layer.offsetY))) {
+          .overlaps(correctedRect.translate(layer.offsetX, layer.offsetY))) {
         return;
       }
       if (_isTile(obj)) {
