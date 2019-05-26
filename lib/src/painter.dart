@@ -450,9 +450,6 @@ class VisibleArea {
   final Rect rect;
   final int firstCol, lastCol, firstRow, lastRow;
 
-  // TODO: this doesn't work for isometric maps, since the visible grid is not
-  // a uniform grid :(
-
   factory VisibleArea(
     Offset offset,
     Size size,
