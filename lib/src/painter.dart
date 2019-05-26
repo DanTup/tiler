@@ -239,10 +239,6 @@ class TileMapPainter extends CustomPainter {
 
   void _paintObjectGroupLayer(Canvas canvas, int elapsedMs, Size size,
       ObjectGroupLayer layer, VisibleArea visible) {
-    // TODO: Some objects should be visible, but hidden ones should
-    // be visible for debug.
-    // TODO: Visible?
-    // TODO: Don't pain those outside of the area
     for (final obj in layer.objects) {
       final rect = _getRectForObject(obj);
       if (!visible.rect
