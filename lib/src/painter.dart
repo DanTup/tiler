@@ -198,19 +198,25 @@ class TileMapPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       )
         ..layout()
-        ..paint(canvas, Offset(obj.x - 1, obj.y - 17));
+        ..paint(canvas, _toOrtho(Offset(obj.x - 1, obj.y - 17)));
     }
     if (obj.isEllipse == true) {
       canvas.drawOval(rect, _debugBorderPaint);
     } else if (obj.isPoint == true) {
-      canvas.drawPoints(PointMode.points, [rect.topLeft], _debugBorderPaint);
+      canvas.drawPoints(
+          PointMode.points, [_toOrtho(rect.topLeft)], _debugBorderPaint);
     } else if (obj.polygon != null && obj.polygon.isNotEmpty) {
+      final offset = _toOrtho(Offset(obj.x, obj.y));
       canvas
         ..save()
-        ..translate(obj.x, obj.y)
+        ..translate(offset.dx, offset.dy)
         ..drawPoints(
           PointMode.polygon,
-          obj.polygon.map((p) => Offset(p.x, p.y)).toList(),
+          obj.polygon
+              .followedBy([obj.polygon.first])
+              .map((p) => Offset(p.x, p.y))
+              .map(_toOrtho)
+              .toList(),
           _debugBorderPaint,
         )
         ..restore();
@@ -218,7 +224,7 @@ class TileMapPainter extends CustomPainter {
       canvas
         ..save()
         ..translate(obj.x, obj.y);
-      // PointMode.lines darw lines between pairs of points, not a full polyline
+      // PointMode.lines draw lines between pairs of points, not a full polyline
       // so we need to duplicate all items except the first/last.
       final points = List.generate(
         obj.polyline.length * 2 - 2,
@@ -227,33 +233,41 @@ class TileMapPainter extends CustomPainter {
       canvas
         ..drawPoints(
           PointMode.lines,
-          points.map((p) => Offset(p.x, p.y)).toList(),
+          points.map((p) => Offset(p.x, p.y)).map(_toOrtho).toList(),
           _debugBorderPaint,
         )
         ..restore();
     } else {
       // TODO: Handle non-rects?
-      canvas.drawRect(rect, _debugBorderPaint);
+      canvas.drawRect(
+        Rect.fromPoints(_toOrtho(rect.topLeft), _toOrtho(rect.bottomRight)),
+        _debugBorderPaint,
+      );
     }
   }
 
   void _paintObjectGroupLayer(Canvas canvas, int elapsedMs, Size size,
       ObjectGroupLayer layer, VisibleArea visible) {
     for (final obj in layer.objects) {
+      // TODO: We should cache this, includinf the ortho->iso transform.
+      // TODO: Handle iso rectangles.
       final rect = _getRectForObject(obj);
       if (!visible.rect
           .overlaps(rect.translate(layer.offsetX, layer.offsetY))) {
         return;
       }
       if (_isTile(obj)) {
-        _paintTile(canvas, elapsedMs, obj.gid, obj.x.round(), obj.y.round());
+        final position = _toOrtho(Offset(obj.x, obj.y));
+        _paintTile(canvas, elapsedMs, obj.gid, position,
+            width: obj.width, height: obj.height, isObject: true);
       } else if (_debugMode) {
         _paintObjectDebug(obj, rect, canvas);
       }
     }
   }
 
-  void _paintTile(Canvas canvas, int elapsedMs, int tileGid, int x, int y) {
+  void _paintTile(Canvas canvas, int elapsedMs, int tileGid, Offset position,
+      {double width, double height, bool isObject = false}) {
     if (tileGid == null || tileGid == 0) {
       return;
     }
@@ -298,6 +312,10 @@ class TileMapPainter extends CustomPainter {
     final image = _loadedMap.tilesetImages[ts][tileData?.image ?? ts.image];
     assert(image != null);
 
+    // If the tile doesn't have an overriden width/height use it from the tileset.
+    width ??= ts.tileWidth.toDouble();
+    height ??= ts.tileHeight.toDouble();
+
     // TODO: Margin
     // TODO: TileOffset
     // TODO: TransparentColor
@@ -313,30 +331,51 @@ class TileMapPainter extends CustomPainter {
       final tileColInImage = tileIndex % ts.columns;
       final tileRowInImage = (tileIndex / ts.columns).floor();
       sourceRect = Rect.fromLTWH(
-        (tileColInImage * ts.tileWidth).toDouble(),
-        (tileRowInImage * ts.tileHeight).toDouble(),
-        ts.tileWidth.toDouble(),
-        ts.tileHeight.toDouble(),
+        (tileColInImage * width).toDouble(),
+        (tileRowInImage * height).toDouble(),
+        width,
+        height,
       );
     }
     final destRect = Rect.fromLTWH(
-      // Offset the difference between actual tile size and grid size to account
-      // for tall isometric maps.
-      (x - ts.tileWidth + _loadedMap.map.tileWidth).toDouble(),
-      (y - ts.tileHeight + _loadedMap.map.tileHeight).toDouble(),
-      ts.tileWidth.toDouble(),
-      ts.tileHeight.toDouble(),
+      position.dx,
+      // Offset the difference between actual tile height and grid height to
+      // account isometric tiles taller than the grid.
+      position.dy - height + _loadedMap.map.tileHeight,
+      width,
+      height,
     );
 
-    final dx = destRect.left + destRect.width / 2.0;
-    final dy = destRect.top + destRect.height / 2.0;
+    final tileCenterX = destRect.left + destRect.width / 2.0;
+    final tileCenterY = destRect.top + destRect.height / 2.0;
+
+    // Calculate offsets to ensure we draw the tiles from the correct location.
+    var offsetX = 0.0, offsetY = 0.0;
+    switch (_loadedMap.map.orientation) {
+      case TileMapOrientation.orthogonal:
+        // For objects, orthogonal tiles are drawn from the top but the
+        // coordinates are from the bottom.
+        offsetY = isObject ? -_loadedMap.map.tileHeight.toDouble() : 0;
+        break;
+      case TileMapOrientation.isometric:
+        // For isometric tiles, the origin is in the middle...
+        offsetX = -width / 2;
+        // And if they're objects, they're also drawn from the top but the
+        // coordinates are for the bottom.
+        offsetY = isObject ? -_loadedMap.map.tileHeight.toDouble() : 0.0;
+        break;
+      default:
+        throw UnimplementedError();
+    }
+
     canvas
       ..save()
-      ..translate(dx, dy)
+      ..translate(tileCenterX, tileCenterY)
       ..scale(flipHorizontal ? -1 : 1, flipVertical ? -1 : 1)
       ..rotate(flipAntiDiagonal ? -90 * math.pi / 180 : 0)
       ..scale(flipAntiDiagonal ? -1 : 1, 1)
-      ..translate(-dx, -dy)
+      ..translate(-tileCenterX, -tileCenterY)
+      ..translate(offsetX, offsetY)
       ..drawImageRect(image, sourceRect, destRect, _paint)
       ..restore();
   }
@@ -386,22 +425,28 @@ class TileMapPainter extends CustomPainter {
           if (orthoX.isEven != renderEvens) {
             continue;
           }
+
           final screenX = orthoX * visible.tileHalfWidth;
           final screenY = orthoY * visible.tileHeight +
               (orthoX.isOdd ? visible.tileHalfHeight : 0);
+          final position = Offset(screenX.toDouble(), screenY.toDouble());
 
           // Floor or ceil?
-          final tileX = ((screenX / visible.tileHalfWidth +
-                      screenY / visible.tileHalfHeight) /
-                  2)
-              .ceil();
-          final tileY = ((screenY / visible.tileHalfHeight -
-                      screenX / visible.tileHalfWidth) /
-                  2)
-              .ceil();
+          final tileX = (screenX / visible.tileHalfWidth +
+                  screenY / visible.tileHalfHeight) /
+              2;
+          final tileY = (screenY / visible.tileHalfHeight -
+                  screenX / visible.tileHalfWidth) /
+              2;
 
           _paintTileLayerTile(
-              tileX, tileY, layer, canvas, elapsedMs, screenX, screenY);
+            tileX.round(),
+            tileY.round(),
+            layer,
+            canvas,
+            elapsedMs,
+            position,
+          );
         }
       }
     }
@@ -415,16 +460,15 @@ class TileMapPainter extends CustomPainter {
   ) {
     for (var tileX = visible.firstCol; tileX <= visible.lastCol; tileX++) {
       for (var tileY = visible.firstRow; tileY <= visible.lastRow; tileY++) {
-        final screenX = tileX * visible.tileWidth;
-        final screenY = tileY * visible.tileHeight;
-        _paintTileLayerTile(
-            tileX, tileY, layer, canvas, elapsedMs, screenX, screenY);
+        final position = Offset(tileX * visible.tileWidth.toDouble(),
+            tileY * visible.tileHeight.toDouble());
+        _paintTileLayerTile(tileX, tileY, layer, canvas, elapsedMs, position);
       }
     }
   }
 
   void _paintTileLayerTile(int tileX, int tileY, TileLayer layer, Canvas canvas,
-      int elapsedMs, int screenX, int screenY) {
+      int elapsedMs, Offset position) {
     if (tileX < 0 ||
         tileX >= _loadedMap.map.width ||
         tileY < 0 ||
@@ -434,7 +478,20 @@ class TileMapPainter extends CustomPainter {
 
     final tileIndex = tileY * layer.width + tileX;
     final gid = layer.data[tileIndex];
-    _paintTile(canvas, elapsedMs, gid, screenX, screenY);
+    _paintTile(canvas, elapsedMs, gid, position);
+  }
+
+  Offset _toOrtho(Offset point) {
+    switch (_loadedMap.map.orientation) {
+      case TileMapOrientation.orthogonal:
+        return point;
+      case TileMapOrientation.isometric:
+        final x = point.dx - point.dy;
+        final y = (point.dx + point.dy) / 2;
+        return Offset(x, y);
+      default:
+        throw UnimplementedError();
+    }
   }
 }
 
