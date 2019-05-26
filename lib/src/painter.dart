@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart' hide Image;
@@ -125,10 +125,10 @@ class TileMapPainter extends CustomPainter {
       _loadedMap.hasAnimations;
 
   Rect _getRectContainingPoints(List<Point> polyline) {
-    final minX = polyline.map((p) => p.x).reduce(min);
-    final maxX = polyline.map((p) => p.x).reduce(max);
-    final minY = polyline.map((p) => p.y).reduce(min);
-    final maxY = polyline.map((p) => p.y).reduce(max);
+    final minX = polyline.map((p) => p.x).reduce(math.min);
+    final maxX = polyline.map((p) => p.x).reduce(math.max);
+    final minY = polyline.map((p) => p.y).reduce(math.min);
+    final maxY = polyline.map((p) => p.y).reduce(math.max);
     return Rect.fromLTRB(minX, minY, maxX, maxY);
   }
 
@@ -334,7 +334,7 @@ class TileMapPainter extends CustomPainter {
       ..save()
       ..translate(dx, dy)
       ..scale(flipHorizontal ? -1 : 1, flipVertical ? -1 : 1)
-      ..rotate(flipAntiDiagonal ? -90 * pi / 180 : 0)
+      ..rotate(flipAntiDiagonal ? -90 * math.pi / 180 : 0)
       ..scale(flipAntiDiagonal ? -1 : 1, 1)
       ..translate(-dx, -dy)
       ..drawImageRect(image, sourceRect, destRect, _paint)
