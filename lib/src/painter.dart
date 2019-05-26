@@ -33,7 +33,7 @@ class TileMapPainter extends CustomPainter {
   /// TODO: Tidy up debug handling.
   final Paint _paint = Paint();
   final Paint _backgroundPaint;
-  final Paint _debugBorderPaint = Paint()
+  final Paint _objectPaint = Paint()
     ..strokeWidth = 10
     ..color = Colors.red
     ..style = PaintingStyle.stroke;
@@ -95,7 +95,7 @@ class TileMapPainter extends CustomPainter {
     if (_debugMode) {
       canvas.drawRect(
           Rect.fromLTWH(_offset.dx, _offset.dy, size.width, size.height),
-          _debugBorderPaint);
+          _objectPaint);
     }
     canvas.restore();
 
@@ -207,13 +207,15 @@ class TileMapPainter extends CustomPainter {
     canvas
       ..save()
       ..translate(offset.dx, offset.dy)
-      ..rotate(obj.rotation * math.pi / 180)
-      ..clipRect(Rect.fromLTWH(0, 0, obj.width, obj.height))
-      ..translate(-offset.dx, -offset.dy);
+      ..rotate(obj.rotation * math.pi / 180);
+    if (obj.text != null) {
+      canvas.clipRect(Rect.fromLTWH(0, 0, obj.width, obj.height));
+    }
+    canvas.translate(-offset.dx, -offset.dy);
     if (obj.isEllipse == true) {
-      canvas.drawOval(rect, _debugBorderPaint);
+      canvas.drawOval(rect, _objectPaint);
     } else if (obj.isPoint == true) {
-      canvas.drawPoints(PointMode.points, [offset], _debugBorderPaint);
+      canvas.drawPoints(PointMode.points, [offset], _objectPaint);
     } else if (obj.polygon != null && obj.polygon.isNotEmpty) {
       canvas
         ..save()
@@ -225,7 +227,7 @@ class TileMapPainter extends CustomPainter {
               .map((p) => Offset(p.x, p.y))
               .map(_toOrtho)
               .toList(),
-          _debugBorderPaint,
+          _objectPaint,
         )
         ..restore();
     } else if (obj.polyline != null && obj.polyline.isNotEmpty) {
@@ -242,7 +244,7 @@ class TileMapPainter extends CustomPainter {
         ..drawPoints(
           PointMode.lines,
           points.map((p) => Offset(p.x, p.y)).map(_toOrtho).toList(),
-          _debugBorderPaint,
+          _objectPaint,
         )
         ..restore();
     } else if (obj.text != null) {
@@ -262,10 +264,16 @@ class TileMapPainter extends CustomPainter {
             maxWidth: obj.width) // TODO: Cache this to avoid doing every frame.
         ..paint(canvas, offset);
     } else {
-      // TODO: Handle non-rects?
-      canvas.drawRect(
-        Rect.fromPoints(offset, _toOrtho(rect.bottomRight)),
-        _debugBorderPaint,
+      canvas.drawPoints(
+        PointMode.polygon,
+        [
+          rect.topLeft,
+          rect.topRight,
+          rect.bottomRight,
+          rect.bottomLeft,
+          rect.topLeft,
+        ].map(_toOrtho).toList(),
+        _objectPaint,
       );
     }
     canvas.restore();
