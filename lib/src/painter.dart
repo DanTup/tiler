@@ -431,7 +431,6 @@ class TileMapPainter extends CustomPainter {
               (orthoX.isOdd ? visible.tileHalfHeight : 0);
           final position = Offset(screenX.toDouble(), screenY.toDouble());
 
-          // Floor or ceil?
           final tileX = (screenX / visible.tileHalfWidth +
                   screenY / visible.tileHalfHeight) /
               2;
