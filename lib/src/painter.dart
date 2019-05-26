@@ -184,29 +184,37 @@ class TileMapPainter extends CustomPainter {
     canvas.restore();
   }
 
-  void _paintObjectDebug(MapObject obj, Rect rect, Canvas canvas) {
-    final text = '${obj.type} ${obj.name}'.trim();
-    if (text != '') {
-      TextPainter(
-        text: TextSpan(
-          style: TextStyle(
-            color: Colors.white,
-            backgroundColor: Colors.red,
+  void _paintObject(MapObject obj, Rect rect, Canvas canvas) {
+    if (_debugMode) {
+      final text = '${obj.type} ${obj.name}'.trim();
+      if (text != '') {
+        TextPainter(
+          text: TextSpan(
+            style: TextStyle(
+              color: Colors.white,
+              backgroundColor: Colors.red,
+              fontSize: 10 / _scale,
+            ),
+            text: text,
           ),
-          text: text,
-        ),
-        textDirection: TextDirection.ltr,
-      )
-        ..layout()
-        ..paint(canvas, _toOrtho(Offset(obj.x - 1, obj.y - 17)));
+          textDirection: TextDirection.ltr,
+        )
+          ..layout()
+          ..paint(canvas, _toOrtho(Offset(obj.x - 1, obj.y - 17)));
+      }
     }
+    final offset = _toOrtho(Offset(obj.x, obj.y));
+    canvas
+      ..save()
+      ..translate(offset.dx, offset.dy)
+      ..rotate(obj.rotation * math.pi / 180)
+      ..clipRect(Rect.fromLTWH(0, 0, obj.width, obj.height))
+      ..translate(-offset.dx, -offset.dy);
     if (obj.isEllipse == true) {
       canvas.drawOval(rect, _debugBorderPaint);
     } else if (obj.isPoint == true) {
-      canvas.drawPoints(
-          PointMode.points, [_toOrtho(rect.topLeft)], _debugBorderPaint);
+      canvas.drawPoints(PointMode.points, [offset], _debugBorderPaint);
     } else if (obj.polygon != null && obj.polygon.isNotEmpty) {
-      final offset = _toOrtho(Offset(obj.x, obj.y));
       canvas
         ..save()
         ..translate(offset.dx, offset.dy)
@@ -223,7 +231,7 @@ class TileMapPainter extends CustomPainter {
     } else if (obj.polyline != null && obj.polyline.isNotEmpty) {
       canvas
         ..save()
-        ..translate(obj.x, obj.y);
+        ..translate(offset.dx, offset.dy);
       // PointMode.lines draw lines between pairs of points, not a full polyline
       // so we need to duplicate all items except the first/last.
       final points = List.generate(
@@ -237,13 +245,30 @@ class TileMapPainter extends CustomPainter {
           _debugBorderPaint,
         )
         ..restore();
+    } else if (obj.text != null) {
+      TextPainter(
+        text: TextSpan(
+          style: TextStyle(
+            color: colorFromHex(obj.text.color),
+            fontSize: obj.text.pixelsize.toDouble(),
+            fontFamily: obj.text.fontfamily,
+          ),
+          text: obj.text.text,
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: _toAlign(obj.text.horizontalAlign),
+      )
+        ..layout(
+            maxWidth: obj.width) // TODO: Cache this to avoid doing every frame.
+        ..paint(canvas, offset);
     } else {
       // TODO: Handle non-rects?
       canvas.drawRect(
-        Rect.fromPoints(_toOrtho(rect.topLeft), _toOrtho(rect.bottomRight)),
+        Rect.fromPoints(offset, _toOrtho(rect.bottomRight)),
         _debugBorderPaint,
       );
     }
+    canvas.restore();
   }
 
   void _paintObjectGroupLayer(Canvas canvas, int elapsedMs, Size size,
@@ -262,8 +287,8 @@ class TileMapPainter extends CustomPainter {
         final position = _toOrtho(Offset(obj.x, obj.y));
         _paintTile(canvas, elapsedMs, obj.gid, position,
             width: obj.width, height: obj.height, isObject: true);
-      } else if (_debugMode) {
-        _paintObjectDebug(obj, rect, canvas);
+      } else {
+        _paintObject(obj, rect, canvas);
       }
     }
   }
@@ -480,6 +505,20 @@ class TileMapPainter extends CustomPainter {
     final tileIndex = tileY * layer.width + tileX;
     final gid = layer.data[tileIndex];
     _paintTile(canvas, elapsedMs, gid, position);
+  }
+
+  TextAlign _toAlign(ObjectTextHorizontalAlign align) {
+    switch (align) {
+      case ObjectTextHorizontalAlign.left:
+        return TextAlign.left;
+      case ObjectTextHorizontalAlign.center:
+        return TextAlign.center;
+      case ObjectTextHorizontalAlign.right:
+        return TextAlign.right;
+      case ObjectTextHorizontalAlign.justify:
+        return TextAlign.justify;
+    }
+    throw UnimplementedError();
   }
 
   Offset _toOrtho(Offset point) {
