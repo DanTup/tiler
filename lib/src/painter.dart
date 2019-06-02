@@ -287,10 +287,11 @@ class TileMapPainter extends CustomPainter {
       final rect = _getRectForObject(obj);
       final correctedRect =
           Rect.fromPoints(_toOrtho(rect.topLeft), _toOrtho(rect.bottomRight));
-      if (!visible.rect
-          .overlaps(correctedRect.translate(layer.offsetX, layer.offsetY))) {
-        return;
-      }
+      // TODO: Fix this to handle Isometric
+      // if (!visible.rect
+      //     .overlaps(correctedRect.translate(layer.offsetX, layer.offsetY))) {
+      //   return;
+      // }
       if (_isTile(obj)) {
         final position = _toOrtho(Offset(obj.x, obj.y));
         _paintTile(canvas, elapsedMs, obj.gid, position,
