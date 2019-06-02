@@ -10,6 +10,7 @@ import 'loader.dart';
 const _bit30flippedAntiDiagonally = 0x20000000;
 const _bit31flippedVertically = 0x40000000;
 const _bit32flippedHorizontally = 0x80000000;
+const _defaultTextColor = '#000000';
 const _low29bits = 0x1FFFFFFF;
 
 Color colorFromHex(String hexColor) {
@@ -266,7 +267,7 @@ class TileMapPainter extends CustomPainter {
       TextPainter(
         text: TextSpan(
           style: TextStyle(
-            color: colorFromHex(obj.text.color),
+            color: colorFromHex(obj.text.color ?? _defaultTextColor),
             fontSize: obj.text.pixelsize.toDouble(),
             fontFamily: obj.text.fontfamily,
           ),
