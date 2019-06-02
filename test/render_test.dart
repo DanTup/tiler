@@ -9,5 +9,10 @@ void main() {
   testMapRender('translations/mirrored');
   testMapRender('translations/rotated_and_mirrored');
   testMapRender('translations/rotated');
+  testMapRender('orientation/orthogonal');
   testMapRender('orientation/isometric', scale: 0.25);
+  testMapRender('geometry/orthogonal');
+  testMapRender('geometry/isometric', scale: 0.25);
+  testMapRender('text/orthogonal');
+  testMapRender('text/isometric', scale: 0.25);
 }
