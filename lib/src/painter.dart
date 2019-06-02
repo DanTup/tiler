@@ -35,7 +35,7 @@ class TileMapPainter extends CustomPainter {
   final Paint _paint = Paint();
   final Paint _backgroundPaint;
   final Paint _objectPaint = Paint()
-    ..strokeWidth = 10
+    ..strokeWidth = 2
     ..color = Colors.red
     ..style = PaintingStyle.stroke;
 
