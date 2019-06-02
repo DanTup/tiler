@@ -13,3 +13,4 @@ dependencies:
 flutter:
   assets:
     - assets/
+    - assets/tilesets/

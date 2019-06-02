@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart' hide Image;
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const TileMapWidget('assets/example_map.json'),
+      home: const TileMapWidget('assets/isometric_testing.json'),
     );
   }
 }
@@ -54,7 +55,7 @@ class _TileMapWidgetState extends State<TileMapWidget> {
                 (map.width * map.tileWidth).toDouble(),
                 (map.height * map.tileHeight).toDouble(),
               ),
-              scale: 0.5,
+              scale: 0.3,
               elapsedMilliseconds: sw.elapsedMilliseconds,
               debugMode: true,
             ),
@@ -73,6 +74,31 @@ class _TileMapWidgetState extends State<TileMapWidget> {
   void initState() {
     super.initState();
     tileMap = loadMap(rootBundle, mapFile);
+    // ..then((map) {
+    //   void addLayer(Layer layer) {
+    //   final layers = <Layer>[];
+    //     layers.add(layer);
+    //     if (layer is GroupLayer) {
+    //       layer.layers.forEach(addLayer);
+    //     }
+    //   }
+
+    //   map.map.layers.forEach(addLayer);
+    //   final player = layers
+    //       .whereType<ObjectGroupLayer>()
+    //       .expand((layer) => layer.objects)
+    //       .firstWhere((obj) => obj.name == 'player');
+
+    //   final x = player.x;
+    //   final y = player.y;
+    //   Timer.periodic(Duration(milliseconds: 100), (t) {
+    //     setState(() {
+    //       player
+    //         ..x = x + math.cos(t.tick.toDouble() / 5.0) * 150
+    //         ..y = y + math.cos(t.tick.toDouble() / 5.0) * 150;
+    //     });
+    //   });
+    // });
   }
 
   @override

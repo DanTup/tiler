@@ -13,7 +13,7 @@ class BoolProperty extends Property {
   factory BoolProperty.fromJson(Map<String, dynamic> json) =>
       _$BoolPropertyFromJson(json);
 
-  final bool value;
+  bool value;
 }
 
 @JsonSerializable()
@@ -29,19 +29,19 @@ class Chunk {
 
   /// Array of unsigned int (GIDs) or base64-encoded data
   @JsonKey(fromJson: decodeData)
-  final List<int> data;
+  List<int> data;
 
   /// Height in tiles
-  final int height;
+  int height;
 
   /// Width in tiles
-  final int width;
+  int width;
 
   /// X coordinate in tiles
-  final int x;
+  int x;
 
   /// Y coordinate in tiles
-  final int y;
+  int y;
 }
 
 @JsonSerializable()
@@ -57,7 +57,7 @@ class ColorProperty extends Property {
   factory ColorProperty.fromJson(Map<String, dynamic> json) =>
       _$ColorPropertyFromJson(json);
 
-  final String value;
+  String value;
 }
 
 @JsonSerializable()
@@ -73,7 +73,7 @@ class FileProperty extends Property {
   factory FileProperty.fromJson(Map<String, dynamic> json) =>
       _$FilePropertyFromJson(json);
 
-  final String value;
+  String value;
 }
 
 @JsonSerializable()
@@ -89,7 +89,7 @@ class FloatProperty extends Property {
   factory FloatProperty.fromJson(Map<String, dynamic> json) =>
       _$FloatPropertyFromJson(json);
 
-  final double value;
+  double value;
 }
 
 @JsonSerializable()
@@ -101,11 +101,11 @@ class Frame {
   factory Frame.fromJson(Map<String, dynamic> json) => _$FrameFromJson(json);
 
   /// Frame duration in milliseconds
-  final int duration;
+  int duration;
 
   /// Local tile ID representing this frame
   @JsonKey(name: 'tileid')
-  final int tileId;
+  int tileId;
 }
 
 @JsonSerializable()
@@ -146,7 +146,7 @@ class GroupLayer extends Layer {
       _$GroupLayerFromJson(json);
 
   /// Array of :ref:`layers <json-layer>`. group only.
-  final List<Layer> layers;
+  List<Layer> layers;
 }
 
 @JsonSerializable()
@@ -188,11 +188,11 @@ class ImageLayer extends Layer {
       _$ImageLayerFromJson(json);
 
   /// Image used by this layer. imagelayer only.
-  final String image;
+  String image;
 
   /// Hex-formatted color (#RRGGBB) (optional). imagelayer only.
   @JsonKey(name: 'transparentcolor')
-  final String transparentColor;
+  String transparentColor;
 }
 
 @JsonSerializable()
@@ -208,7 +208,7 @@ class IntProperty extends Property {
   factory IntProperty.fromJson(Map<String, dynamic> json) =>
       _$IntPropertyFromJson(json);
 
-  final int value;
+  int value;
 }
 
 abstract class Layer {
@@ -244,51 +244,51 @@ abstract class Layer {
   }
 
   /// Row count. Same as map height for fixed-size maps.
-  final int height;
+  int height;
 
   /// Incremental id - unique across all layers
-  final int id;
+  int id;
 
   /// Whether layer is shown or hidden in editor
   @JsonKey(name: 'visible')
-  final bool isVisible;
+  bool isVisible;
 
   /// Name assigned to this layer
-  final String name;
+  String name;
 
   /// Horizontal layer offset in pixels (default: 0)
   @JsonKey(name: 'offsetx', defaultValue: 0)
-  final double offsetX;
+  double offsetX;
 
   /// Vertical layer offset in pixels (default: 0)
   @JsonKey(name: 'offsety', defaultValue: 0)
-  final double offsetY;
+  double offsetY;
 
   /// Value between 0 and 1
-  final double opacity;
+  double opacity;
 
   /// Array of :ref:`Properties <json-property>`
-  final List<Property> properties;
+  List<Property> properties;
 
   /// X coordinate where layer content starts (for infinite maps)
   @JsonKey(name: 'startx')
-  final int startX;
+  int startX;
 
   /// Y coordinate where layer content starts (for infinite maps)
   @JsonKey(name: 'starty')
-  final int startY;
+  int startY;
 
   /// tilelayer, objectgroup, imagelayer or group
-  final LayerType type;
+  LayerType type;
 
   /// Column count. Same as map width for fixed-size maps.
-  final int width;
+  int width;
 
   /// Horizontal layer offset in tiles. Always 0.
-  final int x;
+  int x;
 
   /// Vertical layer offset in tiles. Always 0.
-  final int y;
+  int y;
 }
 
 enum LayerCompression {
@@ -344,58 +344,58 @@ class MapObject {
       _$MapObjectFromJson(json);
 
   /// Global tile ID, only if object represents a tile
-  final int gid;
+  int gid;
 
   /// Height in pixels.
-  final double height;
+  double height;
 
   /// Incremental id, unique across all objects
-  final int id;
+  int id;
 
   /// Used to mark an object as an ellipse
   @JsonKey(name: 'ellipse')
-  final bool isEllipse;
+  bool isEllipse;
 
   /// Used to mark an object as a point
   @JsonKey(name: 'point')
-  final bool isPoint;
+  bool isPoint;
 
   /// Whether object is shown in editor.
   @JsonKey(name: 'visible')
-  final bool isVisible;
+  bool isVisible;
 
   /// String assigned to name field in editor
-  final String name;
+  String name;
 
   /// Array of :ref:`Points <json-point>`, in case the object is a polygon
-  final List<Point> polygon;
+  List<Point> polygon;
 
   /// Array of :ref:`Points <json-point>`, in case the object is a polyline
-  final List<Point> polyline;
+  List<Point> polyline;
 
   /// Array of :ref:`Properties <json-property>`
-  final List<Property> properties;
+  List<Property> properties;
 
   /// Angle in degrees clockwise
-  final double rotation;
+  double rotation;
 
   /// Reference to a template file, in case object is a :doc:`template instance </manual/using-templates>`
-  final String template;
+  String template;
 
   /// Only used for text objects
-  final ObjectText text;
+  ObjectText text;
 
   /// String assigned to type field in editor
-  final String type;
+  String type;
 
   /// Width in pixels.
-  final double width;
+  double width;
 
   /// X coordinate in pixels
-  final double x;
+  double x;
 
   /// Y coordinate in pixels
-  final double y;
+  double y;
 }
 
 @JsonSerializable()
@@ -438,10 +438,10 @@ class ObjectGroupLayer extends Layer {
 
   /// topdown (default) or index. objectgroup only.
   @JsonKey(name: 'draworder', defaultValue: LayerDrawOrder.topDown)
-  final LayerDrawOrder drawOrder;
+  LayerDrawOrder drawOrder;
 
   /// Array of :ref:`objects <json-object>`. objectgroup only.
-  final List<MapObject> objects;
+  List<MapObject> objects;
 }
 
 @JsonSerializable()
@@ -456,13 +456,13 @@ class ObjectTemplate {
 
   /// The object instantiated by this template
   @JsonKey(name: 'object')
-  final MapObject mapObject;
+  MapObject mapObject;
 
   /// External tileset used by the template (optional)
-  final Tileset tileset;
+  Tileset tileset;
 
   /// template
-  final String type;
+  String type;
 }
 
 @JsonSerializable()
@@ -485,50 +485,50 @@ class ObjectText {
       _$ObjectTextFromJson(json);
 
   /// Hex-formatted color (#RRGGBB or #AARRGGBB) (default: ``#000000``)
-  final String color;
+  String color;
 
   /// Font family (default: ``sans-serif``)
   @JsonKey(defaultValue: 'sans-serif')
-  final String fontfamily;
+  String fontfamily;
 
   /// Horizontal alignment (center, right, justify or left (default))
   @JsonKey(name: 'halign', defaultValue: ObjectTextHorizontalAlign.left)
-  final ObjectTextHorizontalAlign horizontalAlign;
+  ObjectTextHorizontalAlign horizontalAlign;
 
   /// Whether to use a bold font (default: false)
   @JsonKey(name: 'bold', defaultValue: false)
-  final bool isBold;
+  bool isBold;
 
   /// Whether to use an italic font (default: false)
   @JsonKey(name: 'italic', defaultValue: false)
-  final bool isItalic;
+  bool isItalic;
 
   /// Whether to use kerning when placing characters (default: true)
   @JsonKey(name: 'kerning', defaultValue: true)
-  final bool isKerning;
+  bool isKerning;
 
   /// Whether to strike out the text (default: false)
   @JsonKey(name: 'strikeout', defaultValue: false)
-  final bool isStrikeout;
+  bool isStrikeout;
 
   /// Whether to underline the text (default: false)
   @JsonKey(name: 'underline', defaultValue: false)
-  final bool isUnderline;
+  bool isUnderline;
 
   /// Whether the text is wrapped within the object bounds (default: false)
   @JsonKey(name: 'wrap', defaultValue: false)
-  final bool isWrap;
+  bool isWrap;
 
   /// Pixel size of font (default: 16)
   @JsonKey(defaultValue: 16)
-  final int pixelsize;
+  int pixelsize;
 
   /// Text
-  final String text;
+  String text;
 
   /// Vertical alignment (center, bottom or top (default))
   @JsonKey(name: 'valign', defaultValue: ObjectTextVerticalAlign.top)
-  final ObjectTextVerticalAlign verticalAlign;
+  ObjectTextVerticalAlign verticalAlign;
 }
 
 enum ObjectTextHorizontalAlign {
@@ -553,10 +553,10 @@ class Point {
   factory Point.fromJson(Map<String, dynamic> json) => _$PointFromJson(json);
 
   /// X coordinate in pixels
-  final double x;
+  double x;
 
   /// Y coordinate in pixels
-  final double y;
+  double y;
 }
 
 abstract class Property {
@@ -584,11 +584,11 @@ abstract class Property {
   }
 
   /// Name of the property
-  final String name;
+  String name;
 
   /// Type of the property (string (default), int, float, bool, color or file (since 0.16, with color and file added in 0.17))
   @JsonKey(defaultValue: PropertyType.string)
-  final PropertyType type;
+  PropertyType type;
 }
 
 enum PropertyType {
@@ -613,7 +613,7 @@ class StringProperty extends Property {
   factory StringProperty.fromJson(Map<String, dynamic> json) =>
       _$StringPropertyFromJson(json);
 
-  final String value;
+  String value;
 }
 
 @JsonSerializable()
@@ -627,13 +627,13 @@ class Terrain {
       _$TerrainFromJson(json);
 
   /// Name of terrain
-  final String name;
+  String name;
 
   /// Array of :ref:`Properties <json-property>`
-  final List<Property> properties;
+  List<Property> properties;
 
   /// Local ID of tile representing terrain
-  final int tile;
+  int tile;
 }
 
 @JsonSerializable()
@@ -653,37 +653,37 @@ class Tile {
   factory Tile.fromJson(Map<String, dynamic> json) => _$TileFromJson(json);
 
   /// Array of :ref:`Frames <json-frame>`
-  final List<Frame> animation;
+  List<Frame> animation;
 
   /// Local ID of the tile
-  final int id;
+  int id;
 
   /// Image representing this tile (optional)
-  final String image;
+  String image;
 
   /// Height of the tile image in pixels
   @JsonKey(name: 'imageheight')
-  final int imageHeight;
+  int imageHeight;
 
   /// Width of the tile image in pixels
   @JsonKey(name: 'imagewidth')
-  final int imageWidth;
+  int imageWidth;
 
   /// Layer with type objectgroup, when collision shapes are specified (optional)
   @JsonKey(name: 'objectgroup')
-  final Layer objectGroup;
+  Layer objectGroup;
 
   /// Percentage chance this tile is chosen when competing with others in the editor (optional)
-  final double probability;
+  double probability;
 
   /// Array of :ref:`Properties <json-property>`
-  final List<Property> properties;
+  List<Property> properties;
 
   /// Index of terrain for each corner of tile (optional)
-  final List<int> terrain;
+  List<int> terrain;
 
   /// The type of the tile (optional)
-  final String type;
+  String type;
 }
 
 @JsonSerializable()
@@ -727,19 +727,19 @@ class TileLayer extends Layer {
       _$TileLayerFromJson(json);
 
   /// Array of :ref:`chunks <json-chunk>` (optional). tilelayer only.
-  final List<Chunk> chunks;
+  List<Chunk> chunks;
 
   /// zlib, gzip or empty (default). tilelayer only.
   @JsonKey(defaultValue: LayerCompression.none)
-  final LayerCompression compression;
+  LayerCompression compression;
 
   /// Array of unsigned int (GIDs) or base64-encoded data. tilelayer only.
   @JsonKey(fromJson: decodeData)
-  final List<int> data;
+  List<int> data;
 
   /// csv (default) or base64. tilelayer only.
   @JsonKey(defaultValue: LayerEncoding.csv)
-  final LayerEncoding encoding;
+  LayerEncoding encoding;
 }
 
 @JsonSerializable()
@@ -770,71 +770,71 @@ class TileMap {
 
   /// Hex-formatted color (#RRGGBB or #AARRGGBB) (optional)
   @JsonKey(name: 'backgroundcolor')
-  final String backgroundColor;
+  String backgroundColor;
 
   /// Number of tile rows
-  final int height;
+  int height;
 
   /// Length of the side of a hex tile in pixels (hexagonal maps only)
   @JsonKey(name: 'hexsidelength')
-  final int hexSideLength;
+  int hexSideLength;
 
   /// Whether the map has infinite dimensions
   @JsonKey(name: 'infinite')
-  final bool isInfinite;
+  bool isInfinite;
 
   /// Array of :ref:`Layers <json-layer>`
-  final List<Layer> layers;
+  List<Layer> layers;
 
   /// Auto-increments for each layer
   @JsonKey(name: 'nextlayerid')
-  final int nextLayerId;
+  int nextLayerId;
 
   /// Auto-increments for each placed object
   @JsonKey(name: 'nextobjectid')
-  final int nextObjectId;
+  int nextObjectId;
 
   /// orthogonal, isometric, staggered or hexagonal
-  final TileMapOrientation orientation;
+  TileMapOrientation orientation;
 
   /// Array of :ref:`Properties <json-property>`
-  final List<Property> properties;
+  List<Property> properties;
 
   /// ``right-down`` (the default), ``right-up``, ``left-down or left-up`` (orthogonal maps only)
   @JsonKey(name: 'renderorder')
-  final TileMapRenderOrder renderOrder;
+  TileMapRenderOrder renderOrder;
 
   /// x or y (staggered / hexagonal maps only)
   @JsonKey(name: 'staggeraxis')
-  final TileMapStaggerAxis staggerAxis;
+  TileMapStaggerAxis staggerAxis;
 
   /// odd or even (staggered / hexagonal maps only)
   @JsonKey(name: 'staggerindex')
-  final TileMapStaggerIndex staggerIndex;
+  TileMapStaggerIndex staggerIndex;
 
   /// Map grid height
   @JsonKey(name: 'tileheight')
-  final int tileHeight;
+  int tileHeight;
 
   /// Map grid width
   @JsonKey(name: 'tilewidth')
-  final int tileWidth;
+  int tileWidth;
 
   /// The Tiled version used to save the file
   @JsonKey(name: 'tiledversion')
-  final String tiledVersion;
+  String tiledVersion;
 
   /// Array of :ref:`Tilesets <json-tileset>`
-  final List<Tileset> tilesets;
+  List<Tileset> tilesets;
 
   /// map (since 1.0)
-  final String type;
+  String type;
 
   /// The JSON format version
-  final num version;
+  num version;
 
   /// Number of tile columns
-  final int width;
+  int width;
 }
 
 enum TileMapOrientation {
@@ -875,10 +875,10 @@ class TileOffset {
       _$TileOffsetFromJson(json);
 
   /// Horizontal offset in pixels
-  final int x;
+  int x;
 
   /// Vertical offset in pixels (positive is down)
-  final int y;
+  int y;
 }
 
 @JsonSerializable()
@@ -892,14 +892,14 @@ class TileSetGrid {
       _$TileSetGridFromJson(json);
 
   /// Cell height of tile grid
-  final int height;
+  int height;
 
   /// orthogonal (default) or isometric
   @JsonKey(defaultValue: TileSetGridOrientation.orthogonal)
-  final TileSetGridOrientation orientation;
+  TileSetGridOrientation orientation;
 
   /// Cell width of tile grid
-  final int width;
+  int width;
 }
 
 enum TileSetGridOrientation {
@@ -939,83 +939,83 @@ class Tileset {
 
   /// Hex-formatted color (#RRGGBB or #AARRGGBB) (optional)
   @JsonKey(name: 'backgroundcolor')
-  final String backgroundColor;
+  String backgroundColor;
 
   /// The number of tile columns in the tileset
-  final int columns;
+  int columns;
 
   /// GID corresponding to the first tile in the set
   @JsonKey(name: 'firstgid')
-  final int firstGid;
+  int firstGid;
 
   /// (optional)
-  final TileSetGrid grid;
+  TileSetGrid grid;
 
   /// Image used for tiles in this set
-  final String image;
+  String image;
 
   /// Height of source image in pixels
   @JsonKey(name: 'imageheight')
-  final int imageHeight;
+  int imageHeight;
 
   /// Width of source image in pixels
   @JsonKey(name: 'imagewidth')
-  final int imageWidth;
+  int imageWidth;
 
   /// Buffer between image edge and first tile (pixels)
-  final int margin;
+  int margin;
 
   /// Name given to this tileset
-  final String name;
+  String name;
 
   /// Array of :ref:`Properties <json-property>`
-  final List<Property> properties;
+  List<Property> properties;
 
   /// The external file that contains this tilesets data
-  final String source;
+  String source;
 
   /// Spacing between adjacent tiles in image (pixels)
-  final int spacing;
+  int spacing;
 
   /// Array of :ref:`Terrains <json-terrain>` (optional)
-  final List<Terrain> terrains;
+  List<Terrain> terrains;
 
   /// The number of tiles in this tileset
   @JsonKey(name: 'tilecount')
-  final int tileCount;
+  int tileCount;
 
   /// Maximum height of tiles in this set
   @JsonKey(name: 'tileheight')
-  final int tileHeight;
+  int tileHeight;
 
   /// (optional)
   @JsonKey(name: 'tileoffset')
-  final TileOffset tileOffset;
+  TileOffset tileOffset;
 
   /// Maximum width of tiles in this set
   @JsonKey(name: 'tilewidth')
-  final int tileWidth;
+  int tileWidth;
 
   /// The Tiled version used to save the file
   @JsonKey(name: 'tiledversion')
-  final String tiledVersion;
+  String tiledVersion;
 
   /// Array of :ref:`Tiles <json-tile>` (optional)
-  final List<Tile> tiles;
+  List<Tile> tiles;
 
   /// Hex-formatted color (#RRGGBB) (optional)
   @JsonKey(name: 'transparentcolor')
-  final String transparentColor;
+  String transparentColor;
 
   /// tileset (for tileset files, since 1.0)
-  final String type;
+  String type;
 
   /// The JSON format version
-  final num version;
+  num version;
 
   /// Array of :ref:`Wang sets <json-wangset>` (since 1.1.5)
   @JsonKey(name: 'wangsets')
-  final List<WangSet> wangSets;
+  List<WangSet> wangSets;
 }
 
 @JsonSerializable()
@@ -1030,16 +1030,16 @@ class WangColor {
       _$WangColorFromJson(json);
 
   /// Hex-formatted color (#RRGGBB or #AARRGGBB)
-  final String color;
+  String color;
 
   /// Name of the Wang color
-  final String name;
+  String name;
 
   /// Probability used when randomizing
-  final double probability;
+  double probability;
 
   /// Local ID of tile representing the Wang color
-  final int tile;
+  int tile;
 }
 
 @JsonSerializable()
@@ -1057,24 +1057,24 @@ class WangSet {
 
   /// Array of :ref:`Wang colors <json-wangcolor>`
   @JsonKey(name: 'cornercolors')
-  final List<WangColor> cornerColors;
+  List<WangColor> cornerColors;
 
   /// Array of :ref:`Wang colors <json-wangcolor>`
   @JsonKey(name: 'edgecolors')
-  final List<WangColor> edgeColors;
+  List<WangColor> edgeColors;
 
   /// Name of the Wang set
-  final String name;
+  String name;
 
   /// Array of :ref:`Properties <json-property>`
-  final List<Property> properties;
+  List<Property> properties;
 
   /// Local ID of tile representing the Wang set
-  final int tile;
+  int tile;
 
   /// Array of :ref:`Wang tiles <json-wangtile>`
   @JsonKey(name: 'wangtiles')
-  final List<WangTile> wangTiles;
+  List<WangTile> wangTiles;
 }
 
 @JsonSerializable()
@@ -1091,21 +1091,21 @@ class WangTile {
 
   /// Tile is flipped diagonally (default: false)
   @JsonKey(name: 'dflip', defaultValue: false)
-  final bool isFlippedDiagonally;
+  bool isFlippedDiagonally;
 
   /// Tile is flipped horizontally (default: false)
   @JsonKey(name: 'hflip', defaultValue: false)
-  final bool isFlippedHorizontally;
+  bool isFlippedHorizontally;
 
   /// Tile is flipped vertically (default: false)
   @JsonKey(name: 'vflip', defaultValue: false)
-  final bool isFlippedVertically;
+  bool isFlippedVertically;
 
   /// Local ID of tile
   @JsonKey(name: 'tileid')
-  final int tileId;
+  int tileId;
 
   /// Array of Wang color indexes (``uchar[8]``)
   @JsonKey(name: 'wangid')
-  final List<int> wangId;
+  List<int> wangId;
 }

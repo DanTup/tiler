@@ -133,7 +133,7 @@ ${definition.values.map(_generateEnumValue).join('\n')}
       buffer.writeln('''  @JsonKey(${jsonKeyParams.join(', ')})''');
     }
 
-    buffer.write('  final ${field.type} ${field.name};');
+    buffer.write('  ${field.type} ${field.name};');
 
     return buffer.toString();
   }
