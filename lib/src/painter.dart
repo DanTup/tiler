@@ -147,6 +147,56 @@ class TileMapPainter extends CustomPainter {
 
   bool _isTile(MapObject obj) => obj.gid != null && obj.gid != 0;
 
+  void _paintGeometricObject(Canvas canvas, MapObject obj) {
+    switch (_loadedMap.map.orientation) {
+      case TileMapOrientation.orthogonal:
+        break;
+      case TileMapOrientation.isometric:
+        canvas
+          ..scale(1, 0.5)
+          ..rotate(45 * math.pi / 180)
+          ..scale(math.sqrt(2));
+        break;
+      default:
+        throw UnimplementedError();
+    }
+
+    if (obj.isPoint == true) {
+      canvas.drawPoints(PointMode.points, [Offset.zero], _objectPaint);
+    } else if (obj.isEllipse == true) {
+      canvas.drawOval(
+        Rect.fromPoints(Offset.zero, Offset(obj.width, obj.height)),
+        _objectPaint,
+      );
+    } else if (obj.polygon != null && obj.polygon.isNotEmpty) {
+      canvas.drawPoints(
+        PointMode.polygon,
+        obj.polygon
+            .followedBy([obj.polygon.first])
+            .map((p) => Offset(p.x, p.y))
+            .toList(),
+        _objectPaint,
+      );
+    } else if (obj.polyline != null && obj.polyline.isNotEmpty) {
+      // PointMode.lines draw lines between pairs of points, not a full polyline
+      // so we need to duplicate all items except the first/last.
+      final points = List.generate(
+        obj.polyline.length * 2 - 2,
+        (i) => obj.polyline[((i + 1) / 2).floor()],
+      );
+      canvas.drawPoints(
+        PointMode.lines,
+        points.map((p) => Offset(p.x, p.y)).toList(),
+        _objectPaint,
+      );
+    } else {
+      canvas.drawRect(
+        Rect.fromPoints(Offset.zero, Offset(obj.width, obj.height)),
+        _objectPaint,
+      );
+    }
+  }
+
   void _paintImageLayer(Canvas canvas, Size size, ImageLayer layer) {
     // TODO: Only if visible?
     final image = _loadedMap.mapImages[layer.image];
@@ -204,50 +254,15 @@ class TileMapPainter extends CustomPainter {
       }
     }
     final offset = _toOrtho(Offset(obj.x, obj.y));
+
     canvas
       ..save()
       ..translate(offset.dx, offset.dy)
       ..rotate(obj.rotation * math.pi / 180);
+
     if (obj.text != null) {
-      canvas.clipRect(Rect.fromLTWH(0, 0, obj.width, obj.height));
-    }
-    canvas.translate(-offset.dx, -offset.dy);
-    if (obj.isEllipse == true) {
-      canvas.drawOval(rect, _objectPaint);
-    } else if (obj.isPoint == true) {
-      canvas.drawPoints(PointMode.points, [offset], _objectPaint);
-    } else if (obj.polygon != null && obj.polygon.isNotEmpty) {
-      canvas
-        ..save()
-        ..translate(offset.dx, offset.dy)
-        ..drawPoints(
-          PointMode.polygon,
-          obj.polygon
-              .followedBy([obj.polygon.first])
-              .map((p) => Offset(p.x, p.y))
-              .map(_toOrtho)
-              .toList(),
-          _objectPaint,
-        )
-        ..restore();
-    } else if (obj.polyline != null && obj.polyline.isNotEmpty) {
-      canvas
-        ..save()
-        ..translate(offset.dx, offset.dy);
-      // PointMode.lines draw lines between pairs of points, not a full polyline
-      // so we need to duplicate all items except the first/last.
-      final points = List.generate(
-        obj.polyline.length * 2 - 2,
-        (i) => obj.polyline[((i + 1) / 2).floor()],
-      );
-      canvas
-        ..drawPoints(
-          PointMode.lines,
-          points.map((p) => Offset(p.x, p.y)).map(_toOrtho).toList(),
-          _objectPaint,
-        )
-        ..restore();
-    } else if (obj.text != null) {
+      // TODO: FIX THIS
+      //  canvas.clipRect(Rect.fromLTWH(0, 0, obj.width, obj.height));
       TextPainter(
         text: TextSpan(
           style: TextStyle(
@@ -262,20 +277,11 @@ class TileMapPainter extends CustomPainter {
       )
         ..layout(
             maxWidth: obj.width) // TODO: Cache this to avoid doing every frame.
-        ..paint(canvas, offset);
+        ..paint(canvas, Offset.zero);
     } else {
-      canvas.drawPoints(
-        PointMode.polygon,
-        [
-          rect.topLeft,
-          rect.topRight,
-          rect.bottomRight,
-          rect.bottomLeft,
-          rect.topLeft,
-        ].map(_toOrtho).toList(),
-        _objectPaint,
-      );
+      _paintGeometricObject(canvas, obj);
     }
+
     canvas.restore();
   }
 
