@@ -374,10 +374,10 @@ class TileMapPainter extends CustomPainter {
       final tileColInImage = tileIndex % ts.columns;
       final tileRowInImage = (tileIndex / ts.columns).floor();
       sourceRect = Rect.fromLTWH(
-        (tileColInImage * width).toDouble(),
-        (tileRowInImage * height).toDouble(),
-        width,
-        height,
+        (tileColInImage * ts.tileWidth.toDouble()).toDouble(),
+        (tileRowInImage * ts.tileHeight.toDouble()).toDouble(),
+        ts.tileWidth.toDouble(),
+        ts.tileHeight.toDouble(),
       );
     }
     final destRect = Rect.fromLTWH(
