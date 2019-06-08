@@ -12,6 +12,7 @@ const _bit31flippedVertically = 0x40000000;
 const _bit32flippedHorizontally = 0x80000000;
 const _defaultTextColor = '#000000';
 const _low29bits = 0x1FFFFFFF;
+const _targetLayerPropertyName = 'TilerTargetLayer';
 
 Color colorFromHex(String hexColor) {
   hexColor = hexColor.toUpperCase().replaceAll('#', '').trim();
@@ -26,6 +27,7 @@ class TileMapPainter extends CustomPainter {
   final LoadedTileMap _loadedMap;
   final Map<int, Tileset> _tileSetForFirstGid = {};
   final Map<Tileset, Map<int, Tile>> _tilesById = {};
+  final Map<String, List<MapObject>> _objectsByTargetLayer = {};
   final Offset _offset;
   final double _scale;
   final int _elapsedMs;
@@ -64,6 +66,25 @@ class TileMapPainter extends CustomPainter {
       for (final tile in actualTs.tiles ?? const <Tile>[]) {
         _tilesById[actualTs][tile.id] = tile;
       }
+    }
+
+    final allLayers = <Layer>[];
+    void addLayer(Layer layer) {
+      allLayers.add(layer);
+      if (layer is GroupLayer) {
+        layer.layers.forEach(addLayer);
+      }
+    }
+
+    _loadedMap.map.layers.forEach(addLayer);
+    for (final layer in allLayers
+        .whereType<ObjectGroupLayer>()
+        .where(_hasCustomTargetLayer)) {
+      final property = layer.properties
+          .whereType<StringProperty>()
+          .singleWhere((p) => p.name == _targetLayerPropertyName);
+      _objectsByTargetLayer[property.value] ??= [];
+      _objectsByTargetLayer[property.value].addAll(layer.objects);
     }
   }
 
@@ -119,11 +140,7 @@ class TileMapPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(TileMapPainter oldDelegate) =>
-      _loadedMap != oldDelegate._loadedMap ||
-      _offset != oldDelegate._offset ||
-      // TODO: Size???
-      _loadedMap.hasAnimations;
+  bool shouldRepaint(TileMapPainter oldDelegate) => true;
 
   Rect _getRectContainingPoints(List<Point> polyline) {
     final minX = polyline.map((p) => p.x).reduce(math.min);
@@ -145,6 +162,9 @@ class TileMapPainter extends CustomPainter {
       return Rect.fromLTWH(obj.x, obj.y, obj.width, obj.height);
     }
   }
+
+  bool _hasCustomTargetLayer(Layer layer) =>
+      layer.properties?.any((p) => p.name == _targetLayerPropertyName) ?? false;
 
   bool _isTile(MapObject obj) => obj.gid != null && obj.gid != 0;
 
@@ -221,7 +241,11 @@ class TileMapPainter extends CustomPainter {
     if (layer is TileLayer) {
       _paintTileLayer(canvas, elapsedMs, size, layer, visible);
     } else if (layer is ObjectGroupLayer) {
-      _paintObjectGroupLayer(canvas, elapsedMs, size, layer, visible);
+      // Don't paint if this layer has a custom target, as its objects will be
+      // painted during the target layer painting instead.
+      if (!_hasCustomTargetLayer(layer)) {
+        _paintObjectGroupLayer(canvas, elapsedMs, size, layer, visible);
+      }
     } else if (layer is ImageLayer) {
       _paintImageLayer(canvas, size, layer);
     } else if (layer is GroupLayer) {
@@ -235,7 +259,7 @@ class TileMapPainter extends CustomPainter {
     canvas.restore();
   }
 
-  void _paintObject(MapObject obj, Rect rect, Canvas canvas) {
+  void _paintObject(MapObject obj, Canvas canvas, int elapsedMs) {
     if (_debugMode) {
       final text = '${obj.type} ${obj.name}'.trim();
       if (text != '') {
@@ -261,7 +285,10 @@ class TileMapPainter extends CustomPainter {
       ..translate(offset.dx, offset.dy)
       ..rotate(obj.rotation * math.pi / 180);
 
-    if (obj.text != null) {
+    if (_isTile(obj)) {
+      _paintTile(canvas, elapsedMs, obj.gid, Offset.zero,
+          width: obj.width, height: obj.height, isObject: true);
+    } else if (obj.text != null) {
       // TODO: FIX THIS
       //  canvas.clipRect(Rect.fromLTWH(0, 0, obj.width, obj.height));
       TextPainter(
@@ -289,23 +316,12 @@ class TileMapPainter extends CustomPainter {
   void _paintObjectGroupLayer(Canvas canvas, int elapsedMs, Size size,
       ObjectGroupLayer layer, VisibleArea visible) {
     for (final obj in layer.objects) {
-      // TODO: We should cache this, includinf the ortho->iso transform.
-      // TODO: Handle iso rectangles.
-      final rect = _getRectForObject(obj);
-      final correctedRect =
-          Rect.fromPoints(_toOrtho(rect.topLeft), _toOrtho(rect.bottomRight));
       // TODO: Fix this to handle Isometric
       // if (!visible.rect
       //     .overlaps(correctedRect.translate(layer.offsetX, layer.offsetY))) {
       //   return;
       // }
-      if (_isTile(obj)) {
-        final position = _toOrtho(Offset(obj.x, obj.y));
-        _paintTile(canvas, elapsedMs, obj.gid, position,
-            width: obj.width, height: obj.height, isObject: true);
-      } else {
-        _paintObject(obj, rect, canvas);
-      }
+      _paintObject(obj, canvas, elapsedMs);
     }
   }
 
@@ -442,7 +458,7 @@ class TileMapPainter extends CustomPainter {
 
     switch (_loadedMap.map.orientation) {
       case TileMapOrientation.orthogonal:
-        _paintTileLayerOrgthognal(visible, layer, canvas, elapsedMs);
+        _paintTileLayerOrgthogonal(visible, layer, canvas, elapsedMs);
         break;
       case TileMapOrientation.isometric:
         _paintTileLayerIsometric(visible, layer, canvas, elapsedMs);
@@ -458,6 +474,8 @@ class TileMapPainter extends CustomPainter {
     Canvas canvas,
     int elapsedMs,
   ) {
+    final objectsToRender = _objectsByTargetLayer[layer.name] ?? const [];
+
     for (var orthoY = visible.firstRow; orthoY <= visible.lastRow; orthoY++) {
       // Make two passes for each row so we can render the odd tiles after the
       // even tiles on either side.
@@ -489,22 +507,41 @@ class TileMapPainter extends CustomPainter {
             elapsedMs,
             position,
           );
+
+          for (final obj in objectsToRender) {
+            final isoX = tileX * visible.tileHeight;
+            final isoY = tileY * visible.tileHeight;
+            if (Rect.fromLTWH(isoX, isoY, visible.tileHeight.toDouble(),
+                    visible.tileHeight.toDouble())
+                .contains(Offset(obj.x, obj.y))) {
+              _paintObject(obj, canvas, elapsedMs);
+            }
+          }
         }
       }
     }
   }
 
-  void _paintTileLayerOrgthognal(
+  void _paintTileLayerOrgthogonal(
     VisibleArea visible,
     TileLayer layer,
     Canvas canvas,
     int elapsedMs,
   ) {
-    for (var tileX = visible.firstCol; tileX <= visible.lastCol; tileX++) {
-      for (var tileY = visible.firstRow; tileY <= visible.lastRow; tileY++) {
+    for (var tileY = visible.firstRow; tileY <= visible.lastRow; tileY++) {
+      // TODO: Do we need to handle this for Orthogonal?
+      // final minY = tileY * visible.tileHeight.toDouble();
+      // final maxY = (tileY + 1) * visible.tileHeight.toDouble();
+      // final objectsToRender =
+      //     _objectsTargettingLayer(layer, minY, maxY, visible);
+      for (var tileX = visible.firstCol; tileX <= visible.lastCol; tileX++) {
         final position = Offset(tileX * visible.tileWidth.toDouble(),
             tileY * visible.tileHeight.toDouble());
         _paintTileLayerTile(tileX, tileY, layer, canvas, elapsedMs, position);
+        // TODO: Do we need to handle this for Orthogonal? (see above)
+        // for (final obj in objectsToRender) {
+        //   _paintObject(obj, canvas, elapsedMs);
+        // }
       }
     }
   }
