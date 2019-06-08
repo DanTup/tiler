@@ -671,7 +671,7 @@ class Tile {
 
   /// Layer with type objectgroup, when collision shapes are specified (optional)
   @JsonKey(name: 'objectgroup')
-  Layer objectGroup;
+  ObjectGroupLayer objectGroup;
 
   /// Percentage chance this tile is chosen when competing with others in the editor (optional)
   double probability;

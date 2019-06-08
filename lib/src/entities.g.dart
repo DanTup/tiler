@@ -52,7 +52,7 @@ Chunk _$ChunkFromJson(Map<String, dynamic> json) {
   return $checkedNew('Chunk', json, () {
     $checkKeys(json, allowedKeys: const ['data', 'height', 'width', 'x', 'y']);
     final val = Chunk(
-        $checkedConvert(json, 'data', (v) => v == null ? null : decodeData(v)),
+        $checkedConvert(json, 'data', (v) => decodeData(v)),
         $checkedConvert(json, 'height', (v) => v as int),
         $checkedConvert(json, 'width', (v) => v as int),
         $checkedConvert(json, 'x', (v) => v as int),
@@ -543,8 +543,9 @@ Tile _$TileFromJson(Map<String, dynamic> json) {
         $checkedConvert(
             json,
             'objectgroup',
-            (v) =>
-                v == null ? null : Layer.fromJson(v as Map<String, dynamic>)),
+            (v) => v == null
+                ? null
+                : ObjectGroupLayer.fromJson(v as Map<String, dynamic>)),
         $checkedConvert(json, 'probability', (v) => (v as num)?.toDouble()),
         $checkedConvert(
             json,
@@ -621,7 +622,7 @@ TileLayer _$TileLayerFromJson(Map<String, dynamic> json) {
         $checkedConvert(json, 'compression',
                 (v) => _$enumDecodeNullable(_$LayerCompressionEnumMap, v)) ??
             LayerCompression.none,
-        $checkedConvert(json, 'data', (v) => v == null ? null : decodeData(v)),
+        $checkedConvert(json, 'data', (v) => decodeData(v)),
         $checkedConvert(json, 'encoding',
                 (v) => _$enumDecodeNullable(_$LayerEncodingEnumMap, v)) ??
             LayerEncoding.csv);

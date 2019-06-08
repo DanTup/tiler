@@ -249,7 +249,13 @@ class TiledJsonSpecParser {
     } else if (type == 'array') {
       return 'List<${_toDartType('', _extractArrayType(description), '')}>';
     } else if (type.startsWith(':ref:')) {
-      return _pascalCase(_improveName('', _refType.firstMatch(type).group(1)));
+      final typeName = _refType.firstMatch(type).group(1);
+      // HACK: Handle Tile.objectGroup
+      if (fieldName == 'objectGroup' && typeName == 'layer') {
+        return 'ObjectGroupLayer';
+      } else {
+        return _pascalCase(_improveName('', typeName));
+      }
     } else {
       return typeMapping[type] ?? _pascalCase(type);
     }
