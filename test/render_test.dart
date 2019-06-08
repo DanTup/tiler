@@ -15,4 +15,5 @@ void main() {
   testMapRender('geometry/isometric', scale: 0.25);
   testMapRender('text/orthogonal');
   testMapRender('text/isometric', scale: 0.25);
+  testMapRender('sorting/isometric', scale: 0.25);
 }
