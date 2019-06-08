@@ -15,6 +15,12 @@
 			"request": "launch",
 			"type": "dart",
 			"program": "test/render_test.dart"
+		},
+		{
+			"name": "Generate Code",
+			"request": "launch",
+			"type": "dart",
+			"program": "tool/generate_classes.dart"
 		}
 	]
 }
