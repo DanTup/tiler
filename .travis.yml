@@ -10,6 +10,7 @@ env:
   matrix:
     - FLUTTER_BRANCH=stable
     - FLUTTER_BRANCH=dev
+    - FLUTTER_BRANCH=master
 
 matrix:
   fast_finish: true
