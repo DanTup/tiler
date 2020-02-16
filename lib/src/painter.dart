@@ -142,27 +142,6 @@ class TileMapPainter extends CustomPainter {
   @override
   bool shouldRepaint(TileMapPainter oldDelegate) => true;
 
-  Rect _getRectContainingPoints(List<Point> polyline) {
-    final minX = polyline.map((p) => p.x).reduce(math.min);
-    final maxX = polyline.map((p) => p.x).reduce(math.max);
-    final minY = polyline.map((p) => p.y).reduce(math.min);
-    final maxY = polyline.map((p) => p.y).reduce(math.max);
-    return Rect.fromLTRB(minX, minY, maxX, maxY);
-  }
-
-  Rect _getRectForObject(MapObject obj) {
-    if (_isTile(obj)) {
-      return Rect.fromLTWH(obj.x, obj.y, _loadedMap.map.tileWidth.toDouble(),
-          _loadedMap.map.tileHeight.toDouble());
-    } else if (obj.polygon != null && obj.polygon.isNotEmpty) {
-      return _getRectContainingPoints(obj.polygon).translate(obj.x, obj.y);
-    } else if (obj.polyline != null && obj.polyline.isNotEmpty) {
-      return _getRectContainingPoints(obj.polyline).translate(obj.x, obj.y);
-    } else {
-      return Rect.fromLTWH(obj.x, obj.y, obj.width, obj.height);
-    }
-  }
-
   bool _hasCustomTargetLayer(Layer layer) =>
       layer.properties?.any((p) => p.name == _targetLayerPropertyName) ?? false;
 

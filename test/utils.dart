@@ -61,7 +61,7 @@ class _DiskAssetBundle extends AssetBundle {
   Future<ByteData> load(String key) async {
     final file = File(path.normalize(path.join(rootFolder, key)));
     assert(file.existsSync());
-    final bytes = await file.readAsBytes() as Uint8List;
+    final bytes = await file.readAsBytes();
     return ByteData.view(bytes.buffer);
   }
 
