@@ -1,3 +1,5 @@
+> NOTE: This software is not being actively developed or maintained.
+
 # Tiler
 
 A [Dart/Flutter library](https://pub.dev/packages/tiler) for rendering maps created with the Tiled map editor in Dart/Flutter.
