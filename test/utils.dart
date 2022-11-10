@@ -38,14 +38,10 @@ Future<void> expectMapRender(
     RepaintBoundary(child: TileMap(map, offset, size, scale: scale)),
   );
 
-  // TODO: Find a way to make goldens the same across platforms). For now, just
-  // run on Windows where most dev is done.
-  if (Platform.isWindows) {
-    await expectLater(
-      find.byType(RepaintBoundary),
-      matchesGoldenFile(goldenFile(goldenName ?? mapName)),
-    );
-  }
+  await expectLater(
+    find.byType(RepaintBoundary),
+    matchesGoldenFile(goldenFile(goldenName ?? mapName)),
+  );
 }
 
 String goldenFile(String name) =>
