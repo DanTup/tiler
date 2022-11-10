@@ -34,10 +34,10 @@ class TileMapPainter extends CustomPainter {
   final bool _debugMode;
 
   /// TODO: Tidy up debug handling.
-  final Paint _paint = Paint()..filterQuality = FilterQuality.low;
+  final Paint _paint = Paint()..filterQuality = FilterQuality.none;
   final Paint _backgroundPaint;
   final Paint _objectPaint = Paint()
-    ..filterQuality = FilterQuality.low
+    ..filterQuality = FilterQuality.none
     ..strokeWidth = 2
     ..color = Colors.red
     ..style = PaintingStyle.stroke;
@@ -58,7 +58,7 @@ class TileMapPainter extends CustomPainter {
         _debugMode = debugMode,
         _backgroundPaint = _loadedMap.map.backgroundColor != null
             ? (Paint()
-              ..filterQuality = FilterQuality.low
+              ..filterQuality = FilterQuality.none
               ..color = colorFromHex(_loadedMap.map.backgroundColor))
             : null {
     for (final ts in _loadedMap.map.tilesets ?? const <Tileset>[]) {
