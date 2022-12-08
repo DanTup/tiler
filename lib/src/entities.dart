@@ -3,14 +3,15 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:json_annotation/json_annotation.dart';
-import 'package:meta/meta.dart';
 
 part 'entities.g.dart';
 part 'entities_generated.dart';
 
 final _zlib = ZLibCodec();
 
-List<int> decodeData(dynamic value) {
+List<int> decodeData(dynamic value) => decodeDataNullable(value)!;
+
+List<int>? decodeDataNullable(dynamic value) {
   if (value is String) {
     final compressedBytes = base64Decode(value);
     // TODO: This is a dirty, we assume that it's ZLIB and if it fails to decode
@@ -34,7 +35,7 @@ List<int> decodeData(dynamic value) {
   }
 }
 
-T _try<T>(T Function() f, {@required T Function() orElse}) {
+T _try<T>(T Function() f, {required T Function() orElse}) {
   try {
     return f();
     // ignore: avoid_catches_without_on_clauses

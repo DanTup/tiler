@@ -2,9 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart' hide Image;
-import 'package:flutter/painting.dart';
-import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 
 import 'entities.dart';
@@ -29,26 +28,23 @@ Future<LoadedTileMap> loadMap(AssetBundle bundle, String mapFile) async {
   await Future.wait(map.tilesets.map((ts) async {
     tilesetImages[ts] = await _preloadTilesetImages(bundle, mapFolder, ts);
   }));
-  await Future.wait(externalTilesets.keys.map((tsPath) async {
-    final ts = externalTilesets[tsPath];
+  await Future.wait(externalTilesets.entries.map((entry) async {
+    final tsPath = entry.key;
+    final ts = entry.value;
     final tsFolder = path.join(mapFolder, path.dirname(tsPath));
     tilesetImages[ts] = await _preloadTilesetImages(bundle, tsFolder, ts);
   }));
 
   final hasAnimations = map.tilesets.followedBy(externalTilesets.values).any(
-      (ts) =>
-          ts.tiles != null &&
-          ts.tiles.any((t) => t.animation != null && t.animation.isNotEmpty));
+      (ts) => ts.tiles?.any((t) => t.animation?.isNotEmpty ?? false) ?? false);
   return LoadedTileMap(
       map, mapImages, externalTilesets, tilesetImages, hasAnimations);
 }
 
 Future<Map<String, Tileset>> _getExternalTilesets(
     AssetBundle bundle, String mapFolder, TileMap map) async {
-  final externalTilesets = map.tilesets
-      .where((ts) => ts.source != null)
-      .map((ts) => ts.source)
-      .toList();
+  final externalTilesets =
+      map.tilesets.map((ts) => ts.source).whereNotNull().toList();
 
   final tilesets = <String, Tileset>{};
   await Future.wait(externalTilesets.map((tsPath) async {
@@ -72,7 +68,8 @@ Future<Tileset> _loadTileset(AssetBundle bundle, String tsFile) async =>
 Future<Map<String, Image>> _preloadMapImages(
     AssetBundle bundle, String mapFolder, TileMap map) async {
   Iterable<Layer> layerWithChildren(Layer layer) => layer is GroupLayer
-      ? <Layer>[layer].followedBy(layer.layers.expand(layerWithChildren))
+      ? <Layer>[layer]
+          .followedBy((layer.layers ?? []).expand(layerWithChildren))
       : [layer];
   final allLayers =
       map.layers.followedBy(map.layers.expand(layerWithChildren)).toList();
@@ -80,7 +77,7 @@ Future<Map<String, Image>> _preloadMapImages(
   final allImages = allLayers
       .whereType<ImageLayer>()
       .map((l) => l.image)
-      .where((img) => img != null)
+      .whereNotNull()
       .toList();
 
   final images = <String, Image>{};
@@ -93,9 +90,9 @@ Future<Map<String, Image>> _preloadMapImages(
 
 Future<Map<String, Image>> _preloadTilesetImages(
     AssetBundle bundle, String tilesetFolder, Tileset ts) async {
-  final allImages = [ts.image]
+  final allImages = (<String?>[ts.image])
       .followedBy(ts.tiles?.map((t) => t.image) ?? const [])
-      .where((img) => img != null)
+      .whereNotNull()
       .toList();
 
   final images = <String, Image>{};

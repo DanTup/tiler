@@ -47,17 +47,13 @@ class DartGenerator {
     buffer.writeln('{');
     if (definition is SubClassDefinition) {
       final allFields = definition.parent.fields
-          .map((f) => '    ${f.type} ${f.name},')
+          .map((f) => '    super.${f.name},')
           .followedBy(definition.fields.map((f) => '    this.${f.name},'))
           .toList();
       buffer
         ..writeln('  $className(')
         ..writeln(allFields.join('\n'))
-        ..writeln('  ) : super(')
-        ..writeln(definition.parent.fields
-            .map((f) => '          ${f.name},')
-            .join('\n'))
-        ..writeln('        );');
+        ..writeln('  );');
     } else {
       buffer
         ..writeln('  $className(')
@@ -92,7 +88,8 @@ class DartGenerator {
     if (definition.fields.isNotEmpty) {
       buffer
         ..writeln('')
-        ..writeln('${definition.fields.map(_generateField).join('\n\n')}');
+        ..writeln(
+            '${definition.fields.map((field) => _generateField(definition, field)).join('\n\n')}');
     }
 
     buffer.write('}');
@@ -112,19 +109,22 @@ ${definition.values.map(_generateEnumValue).join('\n')}
     return '$annotations  ${value.name},';
   }
 
-  String _generateField(FieldDefinition field) {
+  String _generateField(ClassDefinition class_, FieldDefinition field) {
     final buffer = StringBuffer();
 
-    if (field.description != null && field.description.isNotEmpty) {
+    if (field.description?.isNotEmpty ?? false) {
       buffer.writeln('  /// ${field.description}');
     }
+
+    final isOptional = _fieldIsOptional(class_, field);
 
     final jsonKeyParams = <String>[];
     if (field.name != field.jsonName) {
       jsonKeyParams.add("name: '${field.jsonName}'");
     }
     if (field.name == 'data' && field.type == 'List<int>') {
-      jsonKeyParams.add('fromJson: decodeData');
+      final decodeFunctionSuffix = isOptional ? 'Nullable' : '';
+      jsonKeyParams.add('fromJson: decodeData$decodeFunctionSuffix');
     }
     if (field.defaultValue != null) {
       jsonKeyParams.add('defaultValue: ${field.defaultValue}');
@@ -133,9 +133,32 @@ ${definition.values.map(_generateEnumValue).join('\n')}
       buffer.writeln('''  @JsonKey(${jsonKeyParams.join(', ')})''');
     }
 
-    buffer.write('  ${field.type} ${field.name};');
+    final typeSuffix = isOptional ? '?' : '';
+    buffer.write('  ${field.type}${typeSuffix} ${field.name};');
 
     return buffer.toString();
+  }
+
+  bool _fieldIsOptional(ClassDefinition class_, FieldDefinition field) {
+    // TileSet is not defined as having optional fields, but it can be external
+    // so everything can be optional if `source` is set.
+    if (class_.name == 'Tileset') {
+      return true;
+    }
+    return (field.description?.contains('optional') ?? false) ||
+        (field.description?.toLowerCase().contains('only') ?? false) ||
+        (field.description?.toLowerCase().contains(' in case ') ?? false) ||
+        (field.description?.toLowerCase().contains(' (for ') ?? false) ||
+        (field.description?.toLowerCase().contains('default:') ?? false) ||
+        (field.description?.toLowerCase().contains('defaults') ?? false) ||
+        (field.description?.toLowerCase().contains('since') ?? false) ||
+        (field.description?.toLowerCase().contains('used to mark an object') ??
+            false) ||
+        (field.name == 'source') ||
+        (field.name == 'animation') ||
+        (field.name == 'tiledVersion') ||
+        (field.name == 'version') ||
+        (field.name == 'properties');
   }
 }
 
@@ -158,14 +181,15 @@ class EnumValueDefinition extends Definition {
 }
 
 class FieldDefinition extends Definition {
-  final String jsonName, type, description, defaultValue;
+  final String jsonName, type;
+  final String? description, defaultValue;
   FieldDefinition(this.jsonName, String name, this.type, this.description,
       this.defaultValue)
       : super(name);
 }
 
 class SubClassDefinition extends ClassDefinition {
-  ClassDefinition parent;
+  late ClassDefinition parent;
   final String type;
   SubClassDefinition(this.type, String name, List<FieldDefinition> fields)
       : super(name, fields);

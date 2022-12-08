@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart' hide Image;
-import 'package:flutter/painting.dart';
 
 import 'entities.dart';
 import 'loader.dart';
@@ -11,6 +10,7 @@ const _bit30flippedAntiDiagonally = 0x20000000;
 const _bit31flippedVertically = 0x40000000;
 const _bit32flippedHorizontally = 0x80000000;
 const _defaultTextColor = '#000000';
+const _defaultPixelSize = 16.0;
 const _low29bits = 0x1FFFFFFF;
 const _targetLayerPropertyName = 'TilerTargetLayer';
 
@@ -35,7 +35,7 @@ class TileMapPainter extends CustomPainter {
 
   /// TODO: Tidy up debug handling.
   final Paint _paint = Paint()..filterQuality = FilterQuality.low;
-  final Paint _backgroundPaint;
+  final Paint? _backgroundPaint;
   final Paint _objectPaint = Paint()
     ..filterQuality = FilterQuality.low
     ..strokeWidth = 2
@@ -48,26 +48,21 @@ class TileMapPainter extends CustomPainter {
     int elapsedMs = 0,
     double scale = 1,
     bool debugMode = false,
-  })  : assert(_loadedMap != null),
-        assert(_loadedMap.map != null),
-        assert(_loadedMap.mapImages != null),
-        assert(_loadedMap.externalTilesets != null),
-        assert(_loadedMap.tilesetImages != null),
-        _elapsedMs = elapsedMs,
+  })  : _elapsedMs = elapsedMs,
         _scale = scale,
         _debugMode = debugMode,
         _backgroundPaint = _loadedMap.map.backgroundColor != null
             ? (Paint()
               ..filterQuality = FilterQuality.low
-              ..color = colorFromHex(_loadedMap.map.backgroundColor))
+              ..color = colorFromHex(_loadedMap.map.backgroundColor!))
             : null {
-    for (final ts in _loadedMap.map.tilesets ?? const <Tileset>[]) {
+    for (final ts in _loadedMap.map.tilesets) {
       final actualTs =
-          ts.source != null ? _loadedMap.externalTilesets[ts.source] : ts;
-      _tileSetForFirstGid[ts.firstGid] = actualTs;
+          ts.source != null ? _loadedMap.externalTilesets[ts.source]! : ts;
+      _tileSetForFirstGid[ts.firstGid ?? 1] = actualTs;
       _tilesById[actualTs] = {};
       for (final tile in actualTs.tiles ?? const <Tile>[]) {
-        _tilesById[actualTs][tile.id] = tile;
+        _tilesById[actualTs]![tile.id] = tile;
       }
     }
 
@@ -75,7 +70,7 @@ class TileMapPainter extends CustomPainter {
     void addLayer(Layer layer) {
       allLayers.add(layer);
       if (layer is GroupLayer) {
-        layer.layers.forEach(addLayer);
+        layer.layers!.forEach(addLayer);
       }
     }
 
@@ -83,11 +78,12 @@ class TileMapPainter extends CustomPainter {
     for (final layer in allLayers
         .whereType<ObjectGroupLayer>()
         .where(_hasCustomTargetLayer)) {
-      final property = layer.properties
+      final property = (layer.properties ?? [])
           .whereType<StringProperty>()
           .singleWhere((p) => p.name == _targetLayerPropertyName);
-      _objectsByTargetLayer[property.value] ??= [];
-      _objectsByTargetLayer[property.value].addAll(layer.objects);
+      _objectsByTargetLayer
+          .putIfAbsent(property.value, () => [])
+          .addAll(layer.objects ?? []);
     }
   }
 
@@ -109,7 +105,7 @@ class TileMapPainter extends CustomPainter {
       ..scale(_scale);
 
     if (_backgroundPaint != null) {
-      canvas.drawPaint(_backgroundPaint);
+      canvas.drawPaint(_backgroundPaint!);
     }
 
     for (final layer in _loadedMap.map.layers) {
@@ -171,21 +167,23 @@ class TileMapPainter extends CustomPainter {
         Rect.fromPoints(Offset.zero, Offset(obj.width, obj.height)),
         _objectPaint,
       );
-    } else if (obj.polygon != null && obj.polygon.isNotEmpty) {
+    } else if (obj.polygon?.isNotEmpty ?? false) {
+      final polygon = obj.polygon!;
       canvas.drawPoints(
         PointMode.polygon,
-        obj.polygon
-            .followedBy([obj.polygon.first])
+        polygon
+            .followedBy([polygon.first])
             .map((p) => Offset(p.x, p.y))
             .toList(),
         _objectPaint,
       );
-    } else if (obj.polyline != null && obj.polyline.isNotEmpty) {
+    } else if (obj.polyline?.isNotEmpty ?? false) {
+      final polyline = obj.polyline!;
       // PointMode.lines draw lines between pairs of points, not a full polyline
       // so we need to duplicate all items except the first/last.
       final points = List.generate(
-        obj.polyline.length * 2 - 2,
-        (i) => obj.polyline[((i + 1) / 2).floor()],
+        polyline.length * 2 - 2,
+        (i) => polyline[((i + 1) / 2).floor()],
       );
       canvas.drawPoints(
         PointMode.lines,
@@ -202,8 +200,7 @@ class TileMapPainter extends CustomPainter {
 
   void _paintImageLayer(Canvas canvas, Size size, ImageLayer layer) {
     // TODO: Only if visible?
-    final image = _loadedMap.mapImages[layer.image];
-    assert(image != null);
+    final image = _loadedMap.mapImages[layer.image]!;
     canvas.drawImage(
       image,
       Offset(layer.x.toDouble(), layer.y.toDouble()),
@@ -213,11 +210,13 @@ class TileMapPainter extends CustomPainter {
 
   void _paintLayer(Canvas canvas, int elapsedMs, Size size, Layer layer,
       VisibleArea visible) {
+    final offsetX = layer.offsetX ?? 0;
+    final offsetY = layer.offsetY ?? 0;
     canvas
       ..save()
       // Translate the canvas and visible area to account for layer offset.
-      ..translate(layer.offsetX, layer.offsetY);
-    visible = visible.translate(-layer.offsetX, -layer.offsetY);
+      ..translate(offsetX, offsetY);
+    visible = visible.translate(-offsetX, -offsetY);
     // TODO: Opacity?
 
     if (layer is TileLayer) {
@@ -231,7 +230,7 @@ class TileMapPainter extends CustomPainter {
     } else if (layer is ImageLayer) {
       _paintImageLayer(canvas, size, layer);
     } else if (layer is GroupLayer) {
-      for (final layer in layer.layers) {
+      for (final layer in layer.layers!) {
         _paintLayer(canvas, elapsedMs, size, layer, visible);
       }
     } else {
@@ -243,7 +242,12 @@ class TileMapPainter extends CustomPainter {
 
   void _paintObject(MapObject obj, Canvas canvas, int elapsedMs) {
     if (_debugMode) {
-      final text = '${obj.type} ${obj.name}'.trim();
+      final type = obj is Layer
+          ? (obj as Layer).type
+          : obj is Tileset
+              ? (obj as Tileset).type
+              : '';
+      final text = '$type ${obj.name}'.trim();
       if (text != '') {
         TextPainter(
           text: TextSpan(
@@ -268,22 +272,23 @@ class TileMapPainter extends CustomPainter {
       ..rotate(obj.rotation * math.pi / 180);
 
     if (_isTile(obj)) {
-      _paintTile(canvas, elapsedMs, obj.gid, Offset.zero,
+      _paintTile(canvas, elapsedMs, obj.gid!, Offset.zero,
           width: obj.width, height: obj.height, isObject: true);
     } else if (obj.text != null) {
+      final text = obj.text!;
       // TODO: FIX THIS
       //  canvas.clipRect(Rect.fromLTWH(0, 0, obj.width, obj.height));
       TextPainter(
         text: TextSpan(
           style: TextStyle(
-            color: colorFromHex(obj.text.color ?? _defaultTextColor),
-            fontSize: obj.text.pixelsize.toDouble(),
-            fontFamily: obj.text.fontfamily,
+            color: colorFromHex(text.color ?? _defaultTextColor),
+            fontSize: text.pixelsize?.toDouble() ?? _defaultPixelSize,
+            fontFamily: text.fontfamily,
           ),
-          text: obj.text.text,
+          text: text.text,
         ),
         textDirection: TextDirection.ltr,
-        textAlign: _toAlign(obj.text.horizontalAlign),
+        textAlign: _toAlign(text.horizontalAlign),
       )
         ..layout(
             maxWidth: obj.width) // TODO: Cache this to avoid doing every frame.
@@ -297,7 +302,7 @@ class TileMapPainter extends CustomPainter {
 
   void _paintObjectGroupLayer(Canvas canvas, int elapsedMs, Size size,
       ObjectGroupLayer layer, VisibleArea visible) {
-    for (final obj in layer.objects) {
+    for (final obj in layer.objects!) {
       // TODO: Fix this to handle Isometric
       // if (!visible.rect
       //     .overlaps(correctedRect.translate(layer.offsetX, layer.offsetY))) {
@@ -308,8 +313,8 @@ class TileMapPainter extends CustomPainter {
   }
 
   void _paintTile(Canvas canvas, int elapsedMs, int tileGid, Offset position,
-      {double width, double height, bool isObject = false}) {
-    if (tileGid == null || tileGid == 0) {
+      {double? width, double? height, bool isObject = false}) {
+    if (tileGid == 0) {
       return;
     }
 
@@ -321,25 +326,24 @@ class TileMapPainter extends CustomPainter {
     // Remove the top 3 bits that were flags.
     tileGid = tileGid & _low29bits;
 
-    var ts = _loadedMap.map.tilesets.lastWhere((ts) => ts.firstGid <= tileGid);
+    var ts = _loadedMap.map.tilesets
+        .lastWhere((ts) => (ts.firstGid ?? 1) <= tileGid);
     // firstGid is always on the map tileset, not external.
-    final firstGid = ts.firstGid;
+    final firstGid = ts.firstGid ?? 1;
     if (ts.source != null) {
-      ts = _loadedMap.externalTilesets[ts.source];
+      ts = _loadedMap.externalTilesets[ts.source]!;
     }
     var tileIndex = tileGid - firstGid;
-    var tileData = _tilesById[ts][tileIndex];
+    var tileData = _tilesById[ts]![tileIndex];
 
     // If we're an animated file, we may need to swap the index based on the animation
-    if (tileData != null &&
-        tileData.animation != null &&
-        tileData.animation.isNotEmpty) {
+    final animation = tileData?.animation;
+    if (animation != null && animation.isNotEmpty) {
       // TODO: Why do I need to put <int> here?!
-      final totalDuration =
-          tileData.animation.fold<int>(0, (t, f) => t + f.duration);
+      final totalDuration = animation.fold<int>(0, (t, f) => t + f.duration);
       final elapsedTime = elapsedMs % totalDuration;
       var frameStart = 0;
-      tileIndex = tileData.animation.firstWhere((f) {
+      tileIndex = animation.firstWhere((f) {
         if (elapsedTime >= frameStart &&
             elapsedTime < frameStart + f.duration) {
           return true;
@@ -347,21 +351,20 @@ class TileMapPainter extends CustomPainter {
         frameStart += f.duration;
         return false;
       }).tileId;
-      tileData = _tilesById[ts][tileIndex];
+      tileData = _tilesById[ts]![tileIndex];
     }
 
-    final image = _loadedMap.tilesetImages[ts][tileData?.image ?? ts.image];
-    assert(image != null);
+    final image = _loadedMap.tilesetImages[ts]![tileData?.image ?? ts.image]!;
 
     // If the tile doesn't have an overriden width/height use it from the tileset.
-    width ??= ts.tileWidth.toDouble();
-    height ??= ts.tileHeight.toDouble();
+    width ??= ts.tileWidth!.toDouble();
+    height ??= ts.tileHeight!.toDouble();
 
     // TODO: Margin
     // TODO: TileOffset
     // TODO: TransparentColor
     Rect sourceRect;
-    if (tileData?.image != null) {
+    if (tileData != null && tileData.image != null) {
       sourceRect = Rect.fromLTWH(
         0,
         0,
@@ -369,13 +372,18 @@ class TileMapPainter extends CustomPainter {
         tileData.imageHeight.toDouble(),
       );
     } else {
-      final tileColInImage = tileIndex % ts.columns;
-      final tileRowInImage = (tileIndex / ts.columns).floor();
+      // Columns, width/height are only optional on references to external files so we
+      // _must_ have it here.
+      final columns = ts.columns!;
+      final tileWidth = ts.tileWidth!.toDouble();
+      final tileHeight = ts.tileHeight!.toDouble();
+      final tileColInImage = tileIndex % columns;
+      final tileRowInImage = (tileIndex / columns).floor();
       sourceRect = Rect.fromLTWH(
-        (tileColInImage * ts.tileWidth.toDouble()).toDouble(),
-        (tileRowInImage * ts.tileHeight.toDouble()).toDouble(),
-        ts.tileWidth.toDouble(),
-        ts.tileHeight.toDouble(),
+        (tileColInImage * tileWidth).toDouble(),
+        (tileRowInImage * tileHeight).toDouble(),
+        tileWidth,
+        tileHeight,
       );
     }
     final destRect = Rect.fromLTWH(
@@ -537,8 +545,8 @@ class TileMapPainter extends CustomPainter {
       return;
     }
 
-    final tileIndex = tileY * layer.width + tileX;
-    final gid = layer.data[tileIndex];
+    final tileIndex = tileY * layer.width! + tileX;
+    final gid = layer.data![tileIndex];
     _paintTile(canvas, elapsedMs, gid, position);
   }
 
@@ -553,7 +561,6 @@ class TileMapPainter extends CustomPainter {
       case ObjectTextHorizontalAlign.justify:
         return TextAlign.justify;
     }
-    throw UnimplementedError();
   }
 
   Offset _toOrtho(Offset point) {

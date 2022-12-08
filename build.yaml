@@ -6,5 +6,5 @@ targets:
           checked: true
           create_factory: true
           create_to_json: false
-          disallow_unrecognized_keys: true
-          use_wrappers: true
+          disallow_unrecognized_keys: false
+

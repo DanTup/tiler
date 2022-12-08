@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -12,7 +11,7 @@ final _DiskAssetBundle testBundle = _DiskAssetBundle('test');
 
 void testMapRender(
   String mapName, {
-  String goldenName,
+  String? goldenName,
   Offset offset = Offset.zero,
   Size size = const Size(1000, 1000),
   double scale = 1.0,
@@ -25,14 +24,14 @@ void testMapRender(
 Future<void> expectMapRender(
   WidgetTester tester,
   String mapName,
-  String goldenName,
+  String? goldenName,
   Offset offset,
   Size size,
   double scale,
 ) async {
-  final map = await tester.runAsync(
+  final map = (await tester.runAsync(
     () => loadMap(testBundle, mapFile(mapName)),
-  );
+  ))!;
 
   await tester.pumpWidget(
     RepaintBoundary(child: TileMap(map, offset, size, scale: scale)),

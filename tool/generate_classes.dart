@@ -11,7 +11,7 @@ Future<void> main() async {
   Directory.current = Directory(dirname(Platform.script.toFilePath()));
 
   final specUri = Uri.parse(
-      'https://raw.githubusercontent.com/bjorn/tiled/master/docs/reference/json-map-format.rst');
+      'https://raw.githubusercontent.com/mapeditor/tiled/7fa253f244d2d2d74796f0e1fd7ea2d70a5250f3/docs/reference/json-map-format.rst');
   final outputFile = File('../lib/src/entities_generated.dart');
 
   final codeGen = DartGenerator();

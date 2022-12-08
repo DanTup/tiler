@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 import 'dart_generator.dart';
 
 final _arrayDescription = RegExp(r'Array of :ref:`[\w ]+ <json-([\w\-]+)>`');
@@ -17,9 +19,9 @@ final _wordSeparators = RegExp('[ \-]');
 /// Stores the [rawDescription] on a FieldDefinition to allow parsin additional
 /// data from it.
 class FieldDefinitionWithRawDescription extends FieldDefinition {
-  final String rawDescription;
+  final String? rawDescription;
   FieldDefinitionWithRawDescription(String jsonName, String name, String type,
-      this.rawDescription, String description, String defaultValue)
+      this.rawDescription, String? description, String? defaultValue)
       : super(jsonName, name, type, description, defaultValue);
 }
 
@@ -27,19 +29,18 @@ class FieldDefinitionWithRawDescription extends FieldDefinition {
 class TiledJsonSpecParser {
   List<Definition> parse(String spec) {
     final samples = _extractTables(spec);
-    return samples.keys
-        .expand((name) => _parseTable(name, samples[name]))
+    return samples.entries
+        .expand((entry) => _parseTable(entry.key, entry.value))
         .toList();
   }
 
-  String _cleanDescription(String input) => input
-      ?.trim()
-      ?.replaceAllMapped(_descriptionReferences, (m) => m.group(1));
+  String _cleanDescription(String input) =>
+      input.trim().replaceAllMapped(_descriptionReferences, (m) => m.group(1)!);
 
   EnumDefinition _createEnum(
       String className, FieldDefinitionWithRawDescription f) {
     final values = _enumValue
-        .allMatches(f.rawDescription)
+        .allMatches(f.rawDescription!)
         .map((m) => m.group(1) ?? 'none')
         .toSet()
         .toList();
@@ -48,9 +49,9 @@ class TiledJsonSpecParser {
   }
 
   FieldDefinitionWithRawDescription _createField(Match m, String className) {
-    final jsonName = (m.group(1) ?? m.group(2)).trim();
-    final jsonType = (m.group(3) ?? m.group(4)).trim();
-    final description = (m.group(5) ?? m.group(6)).trim();
+    final jsonName = (m.group(1) ?? m.group(2))!.trim();
+    final jsonType = (m.group(3) ?? m.group(4))!.trim();
+    final description = (m.group(5) ?? m.group(6))!.trim();
     final defaultMatch = _defaultValue.firstMatch(description);
     final defaultValue = defaultMatch?.group(1) ??
         defaultMatch?.group(2) ??
@@ -65,7 +66,9 @@ class TiledJsonSpecParser {
         ? null
         : _isEnum(description)
             ? '$type.${defaultValue == 'empty' ? 'none' : _improveName(null, defaultValue)}'
-            : jsonType == 'string' ? "'$defaultValue'" : defaultValue;
+            : jsonType == 'string'
+                ? "'$defaultValue'"
+                : defaultValue;
 
     final cleanDescription = _cleanDescription(description);
 
@@ -85,12 +88,13 @@ class TiledJsonSpecParser {
     if (description.contains('Index of terrain for each corner of tile')) {
       return 'int';
     }
-    return _improveName('', _arrayDescription.firstMatch(description).group(1));
+    return _improveName(
+        '', _arrayDescription.firstMatch(description)!.group(1)!);
   }
 
   Map<String, String> _extractTables(String doc) {
     return Map.fromEntries(
-      _table.allMatches(doc).map((g) => MapEntry(g.group(1), g.group(2))),
+      _table.allMatches(doc).map((g) => MapEntry(g.group(1)!, g.group(2)!)),
     );
   }
 
@@ -98,9 +102,10 @@ class TiledJsonSpecParser {
       EnumValueDefinition(_improveName(null, value), value);
 
   /// Converts TSX fields like "backgroundcolor" into camelCase equivalents.
-  String _improveName(String type, String name) {
+  String _improveName(String? type, String name) {
     const nameImprovements = {
       'backgroundcolor': 'backgroundColor',
+      'class': 'class_',
       'cornercolors': 'cornerColors',
       'dflip': 'flippedDiagonally',
       'draworder': 'drawOrder',
@@ -147,15 +152,15 @@ class TiledJsonSpecParser {
       'wangtile': 'wangTile',
       'wangtiles': 'wangTiles',
     };
-    name =
-        name.replaceAllMapped(RegExp(r'-(.)'), (m) => m.group(1).toUpperCase());
+    name = name.replaceAllMapped(
+        RegExp(r'-(.)'), (m) => m.group(1)!.toUpperCase());
     name = nameImprovements[name.toLowerCase()] ?? name;
     return type == 'bool' ? 'is${_upperFirst(name)}' : name;
   }
 
-  bool _isEnum(String fieldDescription) =>
-      fieldDescription.contains('`` or ') ||
-      fieldDescription.contains('`` (default) or ');
+  bool _isEnum(String? fieldDescription) =>
+      (fieldDescription?.contains('`` or ') ?? false) ||
+      (fieldDescription?.contains('`` (default) or ') ?? false);
 
   List<Definition> _parseTable(String name, String fieldSpec) {
     final className = _pascalCase(_improveName(null, name));
@@ -178,16 +183,18 @@ class TiledJsonSpecParser {
     for (final f
         in fields.where((f) => f.name == 'type' && _isEnum(f.rawDescription))) {
       final types = _enumValue
-          .allMatches(f.rawDescription)
+          .allMatches(f.rawDescription!)
           .map((m) => m.group(1))
-          .where((v) => v != null)
+          .whereNotNull()
           .toSet()
           .toList();
       for (final type in types) {
         // Get any fields specific to this type.
         final myFieldsPattern = RegExp('``$type`` only');
         final myFields = fields
-            .where((f) => myFieldsPattern.hasMatch(f.rawDescription))
+            .where((f) =>
+                f.rawDescription != null &&
+                myFieldsPattern.hasMatch(f.rawDescription!))
             .toList();
 
         // Special handling for Property types - we add in the `value` field
@@ -207,7 +214,9 @@ class TiledJsonSpecParser {
 
     final sharedFieldsPattern = RegExp(r'``\w+`` only');
     final sharedFields = fields
-        .where((f) => !sharedFieldsPattern.hasMatch(f.rawDescription))
+        .where((f) =>
+            f.rawDescription == null ||
+            !sharedFieldsPattern.hasMatch(f.rawDescription!))
         .toList();
 
     return [
@@ -230,26 +239,31 @@ class TiledJsonSpecParser {
     return words.map(_upperFirst).join();
   }
 
-  String _toDartType(String fieldName, String type, String description) {
+  String _toDartType(String fieldName, String type, String? description) {
     const typeMapping = {
       'int': 'int',
       'string': 'String',
       'float': 'double',
       'bool': 'bool',
       'object': 'dynamic', // TODO: Make better?
+      'class': 'dynamic', // TODO: Make better?
       'number': 'num',
       'double': 'double',
       'color': 'String',
       'file': 'String',
     };
-    if (type == 'array or string' && fieldName == 'data') {
+    if (fieldName == 'version' &&
+        (description?.contains('previously a number, saved as string since') ??
+            false)) {
+      return 'Object';
+    } else if (type == 'array or string' && fieldName == 'data') {
       return 'List<int>';
     } else if (type == 'object' && fieldName == 'objects') {
       return 'List<MapObject>';
     } else if (type == 'array') {
-      return 'List<${_toDartType('', _extractArrayType(description), '')}>';
+      return 'List<${_toDartType('', _extractArrayType(description!), '')}>';
     } else if (type.startsWith(':ref:')) {
-      final typeName = _refType.firstMatch(type).group(1);
+      final typeName = _refType.firstMatch(type)!.group(1)!;
       // HACK: Handle Tile.objectGroup
       if (fieldName == 'objectGroup' && typeName == 'layer') {
         return 'ObjectGroupLayer';

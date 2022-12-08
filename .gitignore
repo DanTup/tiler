@@ -1,7 +1,13 @@
 .dart_tool/
 .DS_Store
+.idea/
 .packages
+*.iml
 build/
 example/android/
 example/ios/
+example/linux/
+example/macos/
 example/pubspec.lock
+example/web/
+example/windows/

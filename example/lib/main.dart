@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart' hide Image;
-import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:tiler/tiler.dart';
 
@@ -31,7 +29,7 @@ class TileMapWidget extends StatefulWidget {
 
 class _TileMapWidgetState extends State<TileMapWidget> {
   String mapFile;
-  Future<LoadedTileMap> tileMap;
+  late Future<LoadedTileMap> tileMap;
   Offset offset = Offset.zero;
   Stopwatch sw = Stopwatch()..start();
 
@@ -42,8 +40,8 @@ class _TileMapWidgetState extends State<TileMapWidget> {
     return FutureBuilder<LoadedTileMap>(
       future: tileMap,
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final loadedMap = snapshot.data;
+        final loadedMap = snapshot.data;
+        if (loadedMap != null) {
           final map = loadedMap.map;
           return Padding(
             padding: const EdgeInsets.all(60),
