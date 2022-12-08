@@ -24,7 +24,8 @@ jobs:
     steps:
 
       - uses: actions/checkout@v3
-        submodules: true
+        with:
+          submodules: true
 
       # upload-artifact fails if the path does not exist (it only supports
       # silent failure for no-files-found, but the path must exist).
