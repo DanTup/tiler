@@ -39,8 +39,8 @@ Future<void> expectMapRender(
   );
 
   // TODO: Find a way to make goldens the same across platforms). For now, just
-  // run on Windows where most dev is done.
-  if (Platform.isWindows) {
+  // run on Windows+macOS where I can easily update.
+  if (Platform.isWindows || Platform.isMacOS) {
     await expectLater(
       find.byType(RepaintBoundary),
       matchesGoldenFile(goldenFile(goldenName ?? mapName)),
