@@ -47,8 +47,20 @@ Future<void> expectMapRender(
   }
 }
 
-String goldenFile(String name) =>
-    'test-maps/${name}_${Platform.operatingSystem}.png';
+late String goldenSuffix = () {
+  if (Platform.isMacOS) {
+    return Process.runSync('uname', ['-m'])
+            .stdout
+            .toString()
+            .trim()
+            .startsWith('arm')
+        ? 'macos_arm'
+        : 'macos_x86';
+  }
+  return Platform.operatingSystem;
+}();
+
+String goldenFile(String name) => 'test-maps/${name}_$goldenSuffix.png';
 
 String mapFile(String name) => 'test-maps/$name.json';
 
