@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -17,7 +16,6 @@ void testMapRender(
   Size size = const Size(1000, 1000),
   double scale = 1.0,
 }) {
-  ParagraphBuilder.setDisableRoundingHack(true);
   testWidgets(mapName, (tester) async {
     await expectMapRender(tester, mapName, goldenName, offset, size, scale);
   });
